@@ -10,6 +10,9 @@ const currentSiteDiv = document.getElementById('currentSite');
 const focusTimeInput = document.getElementById('focusTime');
 const breakTimeInput = document.getElementById('breakTime');
 const longBreakTimeInput = document.getElementById('longBreakTime');
+const openLogBtn = document.getElementById('openLogBtn');
+const openManageBtn = document.getElementById('openManageBtn');
+const openStatsBtn = document.getElementById('openStatsBtn');
 
 let currentTabUrl = '';
 
@@ -18,6 +21,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
   await updateDisplay();
   await getCurrentSite();
+  // Wire nav buttons
+  openLogBtn?.addEventListener('click', () => {
+    const url = chrome.runtime.getURL('reflection-log.html');
+    chrome.tabs.create({ url });
+  });
+  openManageBtn?.addEventListener('click', () => {
+    const url = chrome.runtime.getURL('manage-blocked.html');
+    chrome.tabs.create({ url });
+  });
+  openStatsBtn?.addEventListener('click', () => {
+    const url = chrome.runtime.getURL('stats.html');
+    chrome.tabs.create({ url });
+  });
 });
 
 // Get current site information

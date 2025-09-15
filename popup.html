@@ -138,7 +138,14 @@
 </head>
 <body>
   <div class="container">
-    <h1>🍅 Focus Blocker</h1>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+      <h1 style="margin:0;">🍅 Focus Blocker</h1>
+      <div style="display:flex; gap:8px;">
+        <button id="openLogBtn" title="Open Reflection Log" style="width:auto; padding:6px 10px; border-radius:8px; font-size:16px;">📖</button>
+        <button id="openManageBtn" title="Manage Blocked Sites" style="width:auto; padding:6px 10px; border-radius:8px; font-size:16px;">🚫</button>
+        <button id="openStatsBtn" title="View Stats" style="width:auto; padding:6px 10px; border-radius:8px; font-size:16px;">📊</button>
+      </div>
+    </div>
     
     <div class="timer-display" id="timerDisplay">25:00</div>
     <div class="status" id="status">Ready to focus!</div>

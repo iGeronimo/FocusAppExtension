@@ -317,7 +317,7 @@
       padding: 12px;
       border: 2px solid rgba(255, 255, 255, 0.3);
       border-radius: 10px;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.45);
       color: #fff;
       font-size: 16px;
       resize: vertical;
@@ -326,7 +326,7 @@
     .reflection-input:focus {
       outline: none;
       border-color: rgba(76, 175, 80, 0.7);
-      background: rgba(255, 255, 255, 0.568);
+      background: rgba(255, 255, 255, 0.5);
     }
 
     .helper-text {
@@ -417,7 +417,7 @@
 
       <!-- Personal reflection input (max ~500 words) -->
       <div class="reflection-section">
-        <textarea id="reflectionInput" class="reflection-input" rows="6" placeholder="Write a short personal reflection (up to ~500 words)..."></textarea>
+        <textarea id="reflectionInput" class="reflection-input" rows="6" placeholder="Write a short personal reflection (up to 100 words)..."></textarea>
         <div class="helper-text" id="reflectionCounter">0 / 500 words</div>
       </div>
     </div>
@@ -425,10 +425,7 @@
     <div class="action-buttons" id="actionButtons" style="display: none;">
       <button class="nav-button" id="backButton">Go Back</button>
       <button class="nav-button" id="closeButton">Close Tab</button>
-      <button class="nav-button primary-button" id="breakButton">Take a Real Break</button>
-
-      <!-- Admin/utility actions -->
-      <button class="nav-button" id="exportAnalyticsButton">Export Analytics</button>
+      <button class="nav-button primary-button" id="saveReflectionButton">Save Reflection</button>
     </div>
   </div>
   

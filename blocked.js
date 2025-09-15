@@ -2,6 +2,7 @@
 let selectedReason = '';
 let customOptions = [];
 let currentSessionTimestamp = null; // track the record to update reflection
+const REFLECTION_MAX_WORDS = 100;
 
 // Update time every second
 function updateTime() {
@@ -132,18 +133,29 @@ function attachEventListeners() {
   const closeBtn = document.getElementById('closeButton');
   if (closeBtn) closeBtn.addEventListener('click', () => window.close());
 
-  const breakBtn = document.getElementById('breakButton');
-  if (breakBtn) breakBtn.addEventListener('click', takeBreak);
-
   // Export analytics (in bottom action bar)
-  const exportBtn = document.getElementById('exportAnalyticsButton');
-  if (exportBtn) exportBtn.addEventListener('click', exportAnalytics);
+  const saveBtn = document.getElementById('saveReflectionButton');
+  if (saveBtn) saveBtn.addEventListener('click', saveReflection);
 
   // Personal reflection input (limit ~500 words and autosave)
-  const reflectionInput = document.getElementById('reflectionInput');
-  if (reflectionInput) {
-    reflectionInput.addEventListener('input', onReflectionInput);
+  bindReflectionInput();
+}
+
+// Ensure reflection input is bound and counter is in sync
+function bindReflectionInput() {
+  const input = document.getElementById('reflectionInput');
+  const counter = document.getElementById('reflectionCounter');
+  if (!input) return;
+
+  if (!input.dataset.bound) {
+    input.addEventListener('input', onReflectionInput);
+    input.dataset.bound = 'true';
   }
+
+  // Enforce limit on any prefilled value and sync counter
+  const limited = trimToWordLimit(input.value, REFLECTION_MAX_WORDS);
+  if (limited !== input.value) input.value = limited;
+  if (counter) counter.textContent = `${countWords(input.value)} / ${REFLECTION_MAX_WORDS} words`;
 }
 
 // Select a standard option
@@ -255,7 +267,11 @@ function showResults() {
   const reflectionInput = document.getElementById('reflectionInput');
   const reflectionCounter = document.getElementById('reflectionCounter');
   if (reflectionInput) reflectionInput.value = '';
-  if (reflectionCounter) reflectionCounter.textContent = '0 / 500 words';
+  if (reflectionCounter) reflectionCounter.textContent = `0 / ${REFLECTION_MAX_WORDS} words`;
+
+  // Make sure input is bound after showing the section and focus it
+  bindReflectionInput();
+  if (reflectionInput) reflectionInput.focus();
 }
 
 // Generate personalized insight
@@ -324,39 +340,97 @@ function saveResponseData(category, reason) {
   }
 }
 
-// Export analytics data as CSV
-function exportAnalytics() {
+// Save current reflection to chrome.storage (with localStorage fallback)
+function saveReflection() {
   try {
-    const data = JSON.parse(localStorage.getItem('distractionAnalytics') || '[]');
-    if (data.length === 0) {
-      alert('No analytics data to export.');
+    const input = document.getElementById('reflectionInput');
+    const text = (input?.value || '').trim();
+    if (!text) {
+      alert('Please write a reflection before saving.');
       return;
     }
 
-    const csvRows = [];
-    const headers = Object.keys(data[0]);
-    csvRows.push(headers.join(','));
+    // Persist into localStorage alongside the current session entry
+    commitSavedReflection(text);
 
-    data.forEach(row => {
-      const values = headers.map(header => {
-        const escaped = (row[header] || '').toString().replace(/"/g, '""');
-        return `"${escaped}"`;
-      });
-      csvRows.push(values.join(','));
+    // Append to reflection log in chrome.storage.local
+    const record = {
+      timestamp: new Date().toISOString(),
+      reason: selectedReason || '',
+      reflection: text,
+      url: window.location.href
+    };
+    appendToReflectionLog(record, () => {
+      // Optional feedback
+      alert('Reflection saved');
     });
-
-    const csvString = csvRows.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.setAttribute('href', url);
-    a.setAttribute('download', `analytics_${new Date().toISOString().slice(0, 10)}.csv`);
-    a.click();
-
-    URL.revokeObjectURL(url);
   } catch (error) {
-    console.log('Could not export analytics:', error);
+    console.log('Could not save reflection:', error);
+  }
+}
+
+// Update localStorage to store the saved reflection with the current session entry
+function commitSavedReflection(text) {
+  const nowIso = new Date().toISOString();
+  try {
+    let data = JSON.parse(localStorage.getItem('distractionAnalytics') || '[]');
+
+    if (currentSessionTimestamp) {
+      const idx = data.findIndex(d => d.timestamp === currentSessionTimestamp);
+      if (idx !== -1) {
+        data[idx].reflection = (text || '').trim();
+        data[idx].saved = true;
+        data[idx].savedAt = nowIso;
+        localStorage.setItem('distractionAnalytics', JSON.stringify(data));
+        return;
+      }
+    }
+
+    // No active session found: create a new entry
+    const newEntry = {
+      timestamp: nowIso,
+      category: 'saved',
+      reason: selectedReason || '',
+      reflection: (text || '').trim(),
+      url: window.location.href,
+      saved: true,
+      savedAt: nowIso
+    };
+    data.push(newEntry);
+    if (data.length > 100) data = data.slice(-100);
+    localStorage.setItem('distractionAnalytics', JSON.stringify(data));
+    currentSessionTimestamp = nowIso;
+  } catch (e) {
+    console.log('Could not commit saved reflection:', e);
+  }
+}
+
+// Append a record to chrome.storage.local: reflectionLog (fallback to localStorage)
+function appendToReflectionLog(record, callback) {
+  try {
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get({ reflectionLog: [] }, (res) => {
+        const list = Array.isArray(res.reflectionLog) ? res.reflectionLog : [];
+        list.push(record);
+        if (list.length > 1000) {
+          list.splice(0, list.length - 1000);
+        }
+        chrome.storage.local.set({ reflectionLog: list }, () => {
+          if (typeof callback === 'function') callback();
+        });
+      });
+    } else {
+      const raw = localStorage.getItem('reflectionLog');
+      const list = raw ? JSON.parse(raw) : [];
+      list.push(record);
+      if (list.length > 1000) {
+        list.splice(0, list.length - 1000);
+      }
+      localStorage.setItem('reflectionLog', JSON.stringify(list));
+      if (typeof callback === 'function') callback();
+    }
+  } catch (e) {
+    console.log('Could not append reflection log:', e);
   }
 }
 
@@ -400,11 +474,15 @@ const saveReflectionDebounced = debounce(updateReflectionForCurrentSession, 400)
 
 function onReflectionInput(e) {
   const input = e.target;
-  const limited = trimToWordLimit(input.value, 500);
-  if (limited !== input.value) input.value = limited;
+  let words = countWords(input.value);
+  if (words > REFLECTION_MAX_WORDS) {
+    const limited = trimToWordLimit(input.value, REFLECTION_MAX_WORDS);
+    if (limited !== input.value) input.value = limited;
+    words = REFLECTION_MAX_WORDS;
+  }
 
   const counter = document.getElementById('reflectionCounter');
-  if (counter) counter.textContent = `${countWords(input.value)} / 500 words`;
+  if (counter) counter.textContent = `${words} / ${REFLECTION_MAX_WORDS} words`;
 
   saveReflectionDebounced(input.value);
 }

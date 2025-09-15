@@ -38,7 +38,15 @@
   
   "web_accessible_resources": [
     {
-      "resources": ["blocked.html"],
+      "resources": [
+        "blocked.html",
+        "reflection-log.html",
+        "reflection-log.js",
+        "manage-blocked.html",
+        "manage-blocked.js",
+        "stats.html",
+        "stats.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ]

@@ -139,6 +139,22 @@ async function handleTimerComplete() {
   
   if (timerState.mode === 'focus') {
     timerState.completedSessions++;
+    // Record completed focus session in storage for stats
+    try {
+      const durationSec = timerState.settings.focusTime * 60;
+      const endedAt = new Date().toISOString();
+      const startedAt = new Date(Date.now() - durationSec * 1000).toISOString();
+      const entry = { startedAt, endedAt, durationSec };
+      chrome.storage.local.get({ focusHistory: [] }, (res) => {
+        const list = Array.isArray(res.focusHistory) ? res.focusHistory : [];
+        list.push(entry);
+        // Cap history size
+        if (list.length > 2000) list.splice(0, list.length - 2000);
+        chrome.storage.local.set({ focusHistory: list });
+      });
+    } catch (e) {
+      console.warn('Failed to record focus session:', e);
+    }
     
     // Disable blocking when focus session ends
     updateBlockingRules(false);

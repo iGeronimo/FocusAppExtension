@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Stats</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+    .container { background: rgba(255, 255, 255, 0.1); padding: 24px; border-radius: 20px; backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); max-width: 960px; width: 95%; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-top: 24px; }
+    h1 { font-size: 32px; margin: 0 0 10px; color: #ffdf6b; font-weight: 400; }
+    .subtitle { font-size: 16px; margin-bottom: 16px; opacity: 0.9; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 12px; }
+    .card { background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 12px; padding: 16px; text-align: left; }
+    .metric { font-size: 28px; font-weight: bold; }
+    .label { opacity: 0.9; font-size: 12px; margin-top: 6px; }
+    canvas { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 8px; }
+    .toolbar { display:flex; gap:8px; justify-content:center; margin-top: 12px; }
+    .nav-button { background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.3); color: white; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; }
+    .nav-button:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Focus Stats</h1>
+    <div class="subtitle">Overview of your recent focus and distractions</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="metric" id="metricFocusThisMonth">–</div>
+        <div class="label">Total focus time (this month)</div>
+      </div>
+      <div class="card">
+        <div class="metric" id="metricSessionsThisMonth">–</div>
+        <div class="label">Focus sessions completed (this month)</div>
+      </div>
+      <div class="card">
+        <div class="metric" id="metricDistractionsThisWeek">–</div>
+        <div class="label">Distractions (this week)</div>
+      </div>
+      <div class="card">
+        <div class="metric" id="metricTopReason">–</div>
+        <div class="label">Top distraction reason (7 days)</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:20px;">
+      <div class="card" style="grid-column: 1 / -1;">
+        <canvas id="sessionsChart" height="110"></canvas>
+      </div>
+      <div class="card" style="grid-column: 1 / -1;">
+        <canvas id="distractionsChart" height="110"></canvas>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <button class="nav-button" id="backBtn">Back</button>
+      <button class="nav-button" id="refreshBtn">Refresh</button>
+      <button class="nav-button" id="clearFocusHistoryBtn" title="Clear session history">Clear Focus History</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="stats.js"></script>
+</body>
+</html>
