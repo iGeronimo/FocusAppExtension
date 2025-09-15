@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "Pomodoro Focus Blocker",
+  "version": "1.0",
+  "description": "A Pomodoro timer with website blocking functionality to boost productivity",
+  
+  "permissions": [
+    "storage",
+    "notifications",
+    "activeTab",
+    "tabs",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Pomodoro Focus Blocker"
+  },
+
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["blocked.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
