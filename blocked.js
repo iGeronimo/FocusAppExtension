@@ -131,7 +131,7 @@ function attachEventListeners() {
   if (backBtn) backBtn.addEventListener('click', () => history.back());
 
   const closeBtn = document.getElementById('closeButton');
-  if (closeBtn) closeBtn.addEventListener('click', () => window.close());
+  if (closeBtn) closeBtn.addEventListener('click', closeCurrentTab);
 
   // Export analytics (in bottom action bar)
   const saveBtn = document.getElementById('saveReflectionButton');
@@ -485,4 +485,22 @@ function onReflectionInput(e) {
   if (counter) counter.textContent = `${words} / ${REFLECTION_MAX_WORDS} words`;
 
   saveReflectionDebounced(input.value);
+}
+
+function closeCurrentTab() {
+  try {
+    if (typeof chrome !== 'undefined' && chrome.tabs) {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs && tabs[0] && tabs[0].id) {
+          chrome.tabs.remove(tabs[0].id);
+        } else {
+          window.close();
+        }
+      });
+    } else {
+      window.close();
+    }
+  } catch (e) {
+    window.close();
+  }
 }
