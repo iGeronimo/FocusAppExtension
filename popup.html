@@ -105,6 +105,70 @@
       border-radius: 4px;
       text-align: center;
       font-size: 12px;
+      background: rgba(255,255,255,0.18);
+      color: #fff;
+      outline: none;
+    }
+
+    .setting-row input[type="checkbox"] {
+      width: auto;
+      padding: 0;
+      transform: scale(1.15);
+      accent-color: #ffdf6b;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .setting-row select {
+      min-width: 140px;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .setting-row select:hover, .setting-row select:focus {
+      background: rgba(255,255,255,0.28);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .setting-row select option {
+      color: #000;
+    }
+
+    /* Range slider styling */
+    .setting-row input[type="range"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 160px;
+      height: 6px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.25);
+      outline: none;
+    }
+    .setting-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .setting-row input[type="range"]::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      border: none;
     }
 
     .progress-bar {
@@ -178,6 +242,28 @@
       <div class="setting-row">
         <label>Long Break (min):</label>
         <input type="number" id="longBreakTime" min="1" max="60" value="15">
+      </div>
+      <div class="setting-row">
+        <label>Sound on completion:</label>
+        <input type="checkbox" id="soundEnabled" checked>
+      </div>
+      <div class="setting-row">
+        <label>Sound choice:</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select id="soundChoice">
+            <option value="Chime.mp3">Chime</option>
+            <option value="Electronic.mp3">Electronic</option>
+            <option value="Victory.mp3">Victory</option>
+          </select>
+          <button id="testSoundBtn" title="Play selected sound" style="width:auto; padding:6px 10px; border-radius:8px; font-size:12px;">▶</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Volume:</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="range" id="soundVolume" min="0" max="100" value="100" />
+          <span id="soundVolumeValue" style="min-width:38px; text-align:right; font-size:12px;">100%</span>
+        </div>
       </div>
     </div>
   </div>

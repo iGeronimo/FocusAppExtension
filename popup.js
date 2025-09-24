@@ -10,6 +10,11 @@ const currentSiteDiv = document.getElementById('currentSite');
 const focusTimeInput = document.getElementById('focusTime');
 const breakTimeInput = document.getElementById('breakTime');
 const longBreakTimeInput = document.getElementById('longBreakTime');
+const soundEnabledInput = document.getElementById('soundEnabled');
+const soundChoiceSelect = document.getElementById('soundChoice');
+const testSoundBtn = document.getElementById('testSoundBtn');
+const soundVolumeInput = document.getElementById('soundVolume');
+const soundVolumeValue = document.getElementById('soundVolumeValue');
 const openLogBtn = document.getElementById('openLogBtn');
 const openManageBtn = document.getElementById('openManageBtn');
 const openStatsBtn = document.getElementById('openStatsBtn');
@@ -144,12 +149,22 @@ async function loadSettings() {
   const result = await chrome.storage.sync.get({
     focusTime: 25,
     breakTime: 5,
-    longBreakTime: 15
+    longBreakTime: 15,
+    soundEnabled: true,
+    soundChoice: 'Chime.mp3',
+    soundVolume: 1
   });
   
   focusTimeInput.value = result.focusTime;
   breakTimeInput.value = result.breakTime;
   longBreakTimeInput.value = result.longBreakTime;
+  if (soundEnabledInput) soundEnabledInput.checked = !!result.soundEnabled;
+  if (soundChoiceSelect) soundChoiceSelect.value = result.soundChoice;
+  if (soundVolumeInput) {
+    const volPct = Math.round((result.soundVolume ?? 1) * 100);
+    soundVolumeInput.value = String(volPct);
+    if (soundVolumeValue) soundVolumeValue.textContent = `${volPct}%`;
+  }
 }
 
 // Save settings to storage and notify background script
@@ -157,7 +172,10 @@ async function saveSettings() {
   await chrome.storage.sync.set({
     focusTime: parseInt(focusTimeInput.value),
     breakTime: parseInt(breakTimeInput.value),
-    longBreakTime: parseInt(longBreakTimeInput.value)
+    longBreakTime: parseInt(longBreakTimeInput.value),
+    soundEnabled: !!(soundEnabledInput && soundEnabledInput.checked),
+    soundChoice: soundChoiceSelect ? soundChoiceSelect.value : 'Chime.mp3',
+    soundVolume: soundVolumeInput ? (Number(soundVolumeInput.value) / 100) : 1
   });
   
   // Notify background script that settings have changed
@@ -242,6 +260,67 @@ blockCurrentBtn.addEventListener('click', blockCurrentSite);
 // Settings change listeners - only save settings, don't automatically update running timer
 [focusTimeInput, breakTimeInput, longBreakTimeInput].forEach(input => {
   input.addEventListener('change', saveSettings);
+});
+
+if (soundEnabledInput) {
+  soundEnabledInput.addEventListener('change', saveSettings);
+}
+if (soundChoiceSelect) {
+  soundChoiceSelect.addEventListener('change', saveSettings);
+}
+
+if (soundVolumeInput) {
+  const updateVolumeLabel = () => {
+    const vol = Number(soundVolumeInput.value);
+    if (soundVolumeValue) soundVolumeValue.textContent = `${vol}%`;
+  };
+  soundVolumeInput.addEventListener('input', updateVolumeLabel);
+  soundVolumeInput.addEventListener('change', async () => {
+    updateVolumeLabel();
+    await saveSettings();
+  });
+}
+
+if (testSoundBtn) {
+  testSoundBtn.addEventListener('click', async () => {
+    const choice = soundChoiceSelect ? soundChoiceSelect.value : 'Chime.mp3';
+    const vol = soundVolumeInput ? (Number(soundVolumeInput.value) / 100) : 1;
+    console.log('[Popup] Test sound clicked', { choice, vol });
+    // Play locally in popup to avoid offscreen dependency
+    try {
+      const url = chrome.runtime.getURL(`sound/${choice}`);
+      const audio = new Audio(url);
+      audio.volume = Math.max(0, Math.min(1, vol));
+      await audio.play();
+      console.log('[Popup] Local test playback started');
+    } catch (e) {
+      console.warn('[Popup] Local test playback error', e);
+    }
+    // Send a log-only message to background (no echo playback)
+    chrome.runtime.sendMessage({ action: 'testSound', soundChoice: choice, soundVolume: vol, noEcho: true }, () => {
+      const err = chrome.runtime.lastError;
+      if (err) {
+        console.warn('[Popup] testSound sendMessage error:', err);
+      } else {
+        console.log('[Popup] testSound message sent');
+      }
+    });
+  });
+}
+
+// Fallback: if background broadcasts play-sound and popup is open, play it here
+chrome.runtime.onMessage.addListener((msg) => {
+  if (!msg || msg.type !== 'play-sound') return;
+  const payload = msg.payload || {};
+  const vol = typeof payload.volume === 'number' ? Math.max(0, Math.min(1, payload.volume)) : 1;
+  const url = payload.url || chrome.runtime.getURL('sound/Chime.mp3');
+  try {
+    const audio = new Audio(url);
+    audio.volume = vol;
+    audio.play().catch((e) => console.warn('[Popup] play-sound playback error', e));
+  } catch (e) {
+    console.warn('[Popup] play-sound error', e);
+  }
 });
 
 // Update display every second when popup is open

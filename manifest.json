@@ -20,6 +20,7 @@
   "background": {
     "service_worker": "background.js"
   },
+
   
   "action": {
     "default_popup": "popup.html",
@@ -52,7 +53,10 @@
         "manage-blocked.html",
         "manage-blocked.js",
         "stats.html",
-        "stats.js"
+        "stats.js",
+        "offscreen.html",
+        "offscreen.js",
+        "sound/*"
       ],
       "matches": ["<all_urls>"]
     }
