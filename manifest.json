@@ -10,7 +10,8 @@
     "activeTab",
     "tabs",
     "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
+    "declarativeNetRequestWithHostAccess",
+    "windows"
   ],
   
   "host_permissions": [

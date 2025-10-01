@@ -232,7 +232,36 @@ async function ensureOffscreenReady(timeoutMs = 2000) {
 async function sendPlaySound(url, volume) {
   try {
     await ensureOffscreenReady();
+        // Open small prompt window to choose next action
+        try {
+          await openTimeUpWindow();
+        } catch (e) {
+          // non-fatal
+        }
     console.log('[BG] Sending play-sound', { url, volume });
+
+      let timeUpWindowId = null;
+      async function openTimeUpWindow() {
+        // If already open, focus it
+        if (timeUpWindowId !== null) {
+          try {
+            await chrome.windows.update(timeUpWindowId, { focused: true });
+            return;
+          } catch (e) {
+            // Window may have been closed; continue to create
+          }
+          timeUpWindowId = null;
+        }
+        const url = chrome.runtime.getURL('time-up.html');
+        const win = await chrome.windows.create({
+          url,
+          type: 'popup',
+          width: 360,
+          height: 260,
+          focused: true
+        });
+        timeUpWindowId = win.id || null;
+      }
     chrome.runtime.sendMessage({ type: 'play-sound', payload: { url, volume } }, () => {
       const err = chrome.runtime.lastError;
       if (err) {
@@ -474,6 +503,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
       });
       break;
+    case 'startFromPrompt': {
+        // User chose the next mode from the time-up window
+        const mode = request.mode === 'break' ? 'break' : 'focus';
+        // Reset state to the chosen mode and duration, then start
+        if (mode === 'focus') {
+          timerState.mode = 'focus';
+          timerState.timeLeft = timerState.settings.focusTime * 60;
+        } else {
+          timerState.mode = 'break';
+          timerState.timeLeft = timerState.settings.breakTime * 60;
+        }
+      saveTimerState()
+        .then(() => {
+          startTimer();
+          try { sendResponse({ ok: true }); } catch {}
+        })
+        .catch((e) => {
+          console.warn('[BG] startFromPrompt save error', e);
+          try { sendResponse({ ok: false, error: String(e) }); } catch {}
+        });
+      return true; // keep port open for async response
+      }
+  }
+});
+
+// Track time-up popup window lifecycle
+chrome.windows?.onRemoved.addListener((id) => {
+  if (id === timeUpWindowId) {
+    timeUpWindowId = null;
   }
 });
 

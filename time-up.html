@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Time's up</title>
+  <style>
+    body {
+      width: 320px;
+      height: 210px;
+      margin: 0;
+      padding: 16px;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+    h2 { margin: 0 0 8px 0; font-weight: 600; }
+    p { margin: 0 0 16px 0; opacity: 0.9; }
+    .row { display:flex; gap: 10px; margin-top: 10px; }
+    button {
+      flex: 1;
+      background: rgba(255,255,255,0.2);
+      border: 2px solid rgba(255,255,255,0.3);
+      color: white;
+      padding: 10px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    button:hover { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
+    .muted { font-size: 12px; opacity: 0.8; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h2>⏰ Time's up!</h2>
+  <p id="subtitle">Choose what's next:</p>
+  <div class="row">
+    <button id="startBreakBtn">☕ Start break</button>
+    <button id="startFocusBtn">🎯 Start focus</button>
+  </div>
+  <div class="muted" id="details"></div>
+
+  <script src="time-up.js"></script>
+</body>
+</html>

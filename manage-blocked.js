@@ -77,11 +77,6 @@ async function clearAll() {
   render([]);
 }
 
-async function testRules() {
-  chrome.runtime.sendMessage({ action: 'testBlocking' }, (res) => {
-    alert(res && res.success ? `Active dynamic rules: ${res.rulesCount}` : 'Failed to query rules');
-  });
-}
 
 function init() {
   document.getElementById('addBtn')?.addEventListener('click', addSite);
