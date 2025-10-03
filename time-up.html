@@ -35,9 +35,17 @@
 <body>
   <h2>⏰ Time's up!</h2>
   <p id="subtitle">Choose what's next:</p>
-  <div class="row">
-    <button id="startBreakBtn">☕ Start break</button>
-    <button id="startFocusBtn">🎯 Start focus</button>
+  <div class="two-col" style="display:flex; gap:10px;">
+    <div class="col" style="flex:1; display:flex; flex-direction:column; gap:8px;">
+      <button id="startBreakBtn">☕ Start break</button>
+      <label for="breakMinutes" style="font-size:12px; opacity:0.9; text-align:left;">Break (min)</label>
+      <input id="breakMinutes" type="number" min="1" max="180" style="padding:6px 8px; border:none; border-radius:8px; background: rgba(255,255,255,0.2); color:#fff;">
+    </div>
+    <div class="col" style="flex:1; display:flex; flex-direction:column; gap:8px;">
+      <button id="startFocusBtn">🎯 Start focus</button>
+      <label for="focusMinutes" style="font-size:12px; opacity:0.9; text-align:left;">Focus (min)</label>
+      <input id="focusMinutes" type="number" min="1" max="180" style="padding:6px 8px; border:none; border-radius:8px; background: rgba(255,255,255,0.2); color:#fff;">
+    </div>
   </div>
   <div class="muted" id="details"></div>
 

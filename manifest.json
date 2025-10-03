@@ -49,12 +49,16 @@
     {
       "resources": [
         "blocked.html",
+        "reflection-saved.html",
+  "reflection-saved.js",
         "reflection-log.html",
         "reflection-log.js",
         "manage-blocked.html",
         "manage-blocked.js",
         "stats.html",
         "stats.js",
+        "time-up.html",
+        "time-up.js",
         "offscreen.html",
         "offscreen.js",
         "sound/*"

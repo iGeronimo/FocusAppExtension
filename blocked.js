@@ -361,8 +361,13 @@ function saveReflection() {
       url: window.location.href
     };
     appendToReflectionLog(record, () => {
-      // Optional feedback
-      alert('Reflection saved');
+        // Navigate to a confirmation page instead of using alert
+        try {
+          const url = chrome.runtime.getURL('reflection-saved.html');
+          window.location.href = url;
+        } catch (e) {
+          // Fallback: graceful no-op
+        }
     });
   } catch (error) {
     console.log('Could not save reflection:', error);

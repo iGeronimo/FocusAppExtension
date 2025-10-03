@@ -195,6 +195,13 @@ async function handleTimerComplete() {
   }
   await saveTimerState();
   updateBadge();
+
+  // Open small prompt window to choose next action
+  try {
+    await openTimeUpWindow();
+  } catch (e) {
+    console.warn('[BG] Failed to open time-up window', e);
+  }
 }
 
 // Ensure offscreen document exists
@@ -232,36 +239,7 @@ async function ensureOffscreenReady(timeoutMs = 2000) {
 async function sendPlaySound(url, volume) {
   try {
     await ensureOffscreenReady();
-        // Open small prompt window to choose next action
-        try {
-          await openTimeUpWindow();
-        } catch (e) {
-          // non-fatal
-        }
     console.log('[BG] Sending play-sound', { url, volume });
-
-      let timeUpWindowId = null;
-      async function openTimeUpWindow() {
-        // If already open, focus it
-        if (timeUpWindowId !== null) {
-          try {
-            await chrome.windows.update(timeUpWindowId, { focused: true });
-            return;
-          } catch (e) {
-            // Window may have been closed; continue to create
-          }
-          timeUpWindowId = null;
-        }
-        const url = chrome.runtime.getURL('time-up.html');
-        const win = await chrome.windows.create({
-          url,
-          type: 'popup',
-          width: 360,
-          height: 260,
-          focused: true
-        });
-        timeUpWindowId = win.id || null;
-      }
     chrome.runtime.sendMessage({ type: 'play-sound', payload: { url, volume } }, () => {
       const err = chrome.runtime.lastError;
       if (err) {
@@ -273,6 +251,30 @@ async function sendPlaySound(url, volume) {
   } catch (e) {
     console.warn('[BG] sendPlaySound failed:', e);
   }
+}
+
+// Time-up popup window helpers
+let timeUpWindowId = null;
+async function openTimeUpWindow() {
+  // If already open, focus it
+  if (timeUpWindowId !== null) {
+    try {
+      await chrome.windows.update(timeUpWindowId, { focused: true });
+      return;
+    } catch (e) {
+      // Window may have been closed; continue to create
+    }
+    timeUpWindowId = null;
+  }
+  const url = chrome.runtime.getURL('time-up.html');
+  const win = await chrome.windows.create({
+    url,
+    type: 'popup',
+    width: 360,
+    height: 260,
+    focused: true
+  });
+  timeUpWindowId = win.id || null;
 }
 
 // Update extension badge
@@ -505,19 +507,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
     case 'startFromPrompt': {
         // User chose the next mode from the time-up window
-        const mode = request.mode === 'break' ? 'break' : 'focus';
-        // Reset state to the chosen mode and duration, then start
-        if (mode === 'focus') {
-          timerState.mode = 'focus';
-          timerState.timeLeft = timerState.settings.focusTime * 60;
-        } else {
-          timerState.mode = 'break';
-          timerState.timeLeft = timerState.settings.breakTime * 60;
-        }
+      const mode = request.mode === 'break' ? 'break' : 'focus';
+      const focusMinutes = Number.isFinite(request.focusMinutes) ? Math.max(1, Math.min(180, Math.floor(request.focusMinutes))) : timerState.settings.focusTime;
+      const breakMinutes = Number.isFinite(request.breakMinutes) ? Math.max(1, Math.min(180, Math.floor(request.breakMinutes))) : timerState.settings.breakTime;
+      console.log('[BG] startFromPrompt received', { requestMode: request.mode, resolvedMode: mode, focusMinutes, breakMinutes });
+      try { chrome.storage.sync.set({ focusTime: focusMinutes, breakTime: breakMinutes }); } catch {}
+      // Update in-memory settings
+      timerState.settings.focusTime = focusMinutes;
+      timerState.settings.breakTime = breakMinutes;
+      // Ensure any existing timer is fully stopped before switching
+      pauseTimer();
+      // Apply the chosen mode and duration explicitly
+      if (mode === 'focus') {
+        timerState.mode = 'focus';
+        timerState.timeLeft = focusMinutes * 60;
+      } else {
+        timerState.mode = 'break';
+        timerState.timeLeft = breakMinutes * 60;
+      }
+      // Persist and then start
       saveTimerState()
         .then(() => {
+          updateBadge();
           startTimer();
-          try { sendResponse({ ok: true }); } catch {}
+          try { sendResponse({ ok: true, mode: timerState.mode, timeLeft: timerState.timeLeft }); } catch {}
         })
         .catch((e) => {
           console.warn('[BG] startFromPrompt save error', e);
