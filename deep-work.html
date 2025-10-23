@@ -3,18 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <title>Deep Work Checklist</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-    body { width: 380px; height: 320px; margin: 0; padding: 16px; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; }
+    body { width: 380px; height: 320px; margin: 0; padding: 16px; box-sizing: border-box; }
     h2 { margin: 0 0 8px 0; font-weight: 600; }
-    p { margin: 0 0 12px 0; opacity: 0.9; }
+    p { margin: 0 0 12px 0; }
     .list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; max-height: 180px; overflow: auto; padding-right: 4px; }
-    .item { display: flex; align-items: flex-start; gap: 8px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 8px; }
-    .item input[type="checkbox"] { transform: scale(1.2); accent-color: #ffdf6b; margin-top: 2px; }
+    .item { display: flex; align-items: flex-start; gap: 8px; border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+    .item input[type="checkbox"] { transform: scale(1.2); margin-top: 2px; }
     .actions { display:flex; gap:8px; margin-top: 12px; }
-    button { flex:1; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.3); color: white; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; transition: all 0.2s ease; }
-    button:hover { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
-    button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .empty { opacity: 0.85; font-size: 13px; }
+    button { flex:1; }
+    .empty { font-size: 13px; color: var(--muted); }
   </style>
 </head>
 <body>

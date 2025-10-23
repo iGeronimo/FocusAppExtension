@@ -4,19 +4,19 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Focus Stats</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-    .container { background: rgba(255, 255, 255, 0.1); padding: 24px; border-radius: 20px; backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.2); max-width: 960px; width: 95%; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-top: 24px; }
-    h1 { font-size: 32px; margin: 0 0 10px; color: #ffdf6b; font-weight: 400; }
-    .subtitle { font-size: 16px; margin-bottom: 16px; opacity: 0.9; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 12px; }
-    .card { background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 12px; padding: 16px; text-align: left; }
-    .metric { font-size: 28px; font-weight: bold; }
-    .label { opacity: 0.9; font-size: 12px; margin-top: 6px; }
-    canvas { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 8px; }
-    .toolbar { display:flex; gap:8px; justify-content:center; margin-top: 12px; }
-    .nav-button { background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.3); color: white; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.3s ease; }
-    .nav-button:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
+    body { text-align:center; padding:20px; display:flex; flex-direction:column; align-items:center; }
+    .container { padding: 24px; max-width: 960px; width:95%; margin-top: 24px; text-align:left; }
+    h1 { font-size: 28px; margin: 0 0 10px; font-weight: 600; text-align:center; }
+    .subtitle { font-size: 14px; margin-bottom: 16px; text-align:center; }
+    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px; margin-top:12px; }
+    .card { padding:16px; }
+    .metric { font-size: 26px; font-weight: 700; }
+    .label { font-size: 12px; margin-top: 6px; color: var(--muted); }
+    canvas { padding: 8px; background:#fff; }
+    .toolbar { display:flex; gap:8px; justify-content:center; margin-top:12px; }
+    .nav-button { font-size: 14px; }
   </style>
 </head>
 <body>

@@ -45,7 +45,7 @@ const valueLabelPlugin = {
       if (canvasId !== 'sessionsChart') return; // only label focus chart
       const { ctx } = chart;
       ctx.save();
-      ctx.fillStyle = '#fff';
+  ctx.fillStyle = '#fff';
       ctx.font = '12px Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
       const dataset = chart.data?.datasets?.[0];
       const meta = chart.getDatasetMeta(0);
@@ -199,7 +199,7 @@ async function render() {
   if (!sessionsHasData) {
     const ctx = sessionsCanvas.getContext('2d');
     ctx.clearRect(0, 0, sessionsCanvas.width, sessionsCanvas.height);
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
     ctx.font = '16px Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
     ctx.fillText('No focus time to display yet', sessionsCanvas.width / 2, sessionsCanvas.height / 2);
@@ -219,10 +219,10 @@ async function render() {
         datasets: [{
           label: 'Focus minutes',
           data: minutesData,
-          backgroundColor: 'rgba(102, 126, 234, 0.85)', // #667eea indigo
-          borderColor: '#4c63d2',
+          backgroundColor: '#fff',
+          borderColor: '#fff',
           borderWidth: 1.5,
-          hoverBackgroundColor: 'rgba(102, 126, 234, 1)'
+          hoverBackgroundColor: 'rgba(255,255,255,0.85)'
         }]
       },
       options: {
@@ -257,13 +257,13 @@ async function render() {
   if (!distractionsHasData) {
     const ctx = distractionsCanvas.getContext('2d');
     ctx.clearRect(0, 0, distractionsCanvas.width, distractionsCanvas.height);
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.fillStyle = '#fff';
     ctx.textAlign = 'center';
     ctx.font = '16px Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
     ctx.fillText('No distraction categories to display yet', distractionsCanvas.width / 2, distractionsCanvas.height / 2);
   } else {
     const ctx2 = distractionsCanvas.getContext('2d');
-  distractionsChartInstance = new Chart(ctx2, { type: 'bar', data: { labels, datasets: [{ label: 'Distractions (14 days)', data: values, backgroundColor: 'rgba(118, 75, 162, 0.85)', borderColor: '#5b3a86', borderWidth: 1.5, hoverBackgroundColor: 'rgba(118, 75, 162, 1)' }]}, options: { indexAxis: 'x', scales: { x: { ticks: { color: '#fff' } }, y: { ticks: { color: '#fff', precision: 0 } , beginAtZero: true } }, plugins: { legend: { labels: { color: '#fff' } } } } });
+  distractionsChartInstance = new Chart(ctx2, { type: 'bar', data: { labels, datasets: [{ label: 'Distractions (14 days)', data: values, backgroundColor: '#fff', borderColor: '#fff', borderWidth: 1.5, hoverBackgroundColor: 'rgba(255,255,255,0.85)' }]}, options: { indexAxis: 'x', scales: { x: { ticks: { color: '#fff' } }, y: { ticks: { color: '#fff', precision: 0 } , beginAtZero: true } }, plugins: { legend: { labels: { color: '#fff' } } } } });
   }
 }
 

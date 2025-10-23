@@ -55,6 +55,8 @@
         "reflection-log.js",
         "manage-blocked.html",
         "manage-blocked.js",
+    "settings.html",
+    "settings.js",
         "stats.html",
         "stats.js",
         "time-up.html",

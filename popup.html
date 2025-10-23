@@ -2,202 +2,39 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <link rel="stylesheet" href="styles.css">
   <style>
-    body {
-      width: 300px;
-      padding: 20px;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      margin: 0;
-    }
+    body { width:300px; padding:20px; padding-bottom:28px; }
+    .container { text-align:center; border-width:2px; padding:14px; border-radius:12px; margin:6px; }
+    h1 { margin:0 0 20px 0; font-size:20px; font-weight:600; }
+    .timer-display { font-size:44px; font-weight:700; margin:18px 0; font-family: 'Courier New', monospace; }
+    .status { font-size:14px; margin:8px 0; opacity:0.9; }
+  .controls { margin: 20px 0; }
+    button { width: 90px; }
+  .block-section { margin-top:20px; padding-top:20px; margin-bottom:14px; border-top:2px solid var(--border); }
+    .block-current-btn { width:100%; font-size:16px; padding:12px; margin:10px 0; }
+  .settings { margin-top:18px; padding-top:18px; border-top:2px solid var(--border); }
+    .setting-row { display:flex; justify-content:space-between; align-items:center; margin:8px 0; }
+    .setting-row label { font-size:12px; }
+    .setting-row input { width: 60px; text-align:center; font-size:12px; }
+    .setting-row input[type="checkbox"] { width:auto; padding:0; transform: scale(1.05); background: transparent; }
+    .setting-row select { min-width:140px; }
+    .setting-row input[type="range"] { width: 160px; height:6px; background:#efefef; border-radius:4px; }
+    .session-counter { font-size: 13px; margin: 8px 0; }
+    .current-site { font-size: 12px; opacity: 0.8; margin-bottom: 10px; word-break: break-all; }
 
-    .container {
-      text-align: center;
-    }
+    /* Compact times row */
+    .times-row { display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; align-items:center; }
+    .times-row .cell { display:flex; flex-direction:column; gap:4px; }
+    .times-row label { font-size:11px; text-align:left; }
+    .times-row input { width:100%; padding:6px 8px; }
 
-    h1 {
-      margin: 0 0 20px 0;
-      font-size: 24px;
-      font-weight: 300;
-    }
-
-    .timer-display {
-      font-size: 48px;
-      font-weight: bold;
-      margin: 20px 0;
-      font-family: 'Courier New', monospace;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-
-    .status {
-      font-size: 16px;
-      margin: 10px 0;
-      opacity: 0.9;
-    }
-
-    .controls {
-      margin: 20px 0;
-    }
-
-    button {
-      background: rgba(255,255,255,0.2);
-      border: 2px solid rgba(255,255,255,0.3);
-      color: white;
-      padding: 10px 20px;
-      margin: 5px;
-      border-radius: 25px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      width: 90px;
-    }
-
-    button:hover {
-      background: rgba(255,255,255,0.3);
-      border-color: rgba(255,255,255,0.5);
-    }
-
-    button:active {
-      transform: scale(0.95);
-    }
-
-    .block-section {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid rgba(255,255,255,0.3);
-    }
-
-    .block-current-btn {
-      width: 100%;
-      background: rgba(255, 107, 107, 0.8);
-      border-color: rgba(255, 107, 107, 0.9);
-      font-size: 16px;
-      padding: 12px;
-      margin: 10px 0;
-    }
-
-    .block-current-btn:hover {
-      background: rgba(255, 107, 107, 0.9);
-    }
-
-    .settings {
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid rgba(255,255,255,0.3);
-    }
-
-    .setting-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 8px 0;
-    }
-
-    .setting-row label {
-      font-size: 12px;
-    }
-
-    .setting-row input {
-      width: 50px;
-      padding: 4px;
-      border: none;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 12px;
-      background: rgba(255,255,255,0.18);
-      color: #fff;
-      outline: none;
-    }
-
-    .setting-row input[type="checkbox"] {
-      width: auto;
-      padding: 0;
-      transform: scale(1.15);
-      accent-color: #ffdf6b;
-      cursor: pointer;
-      background: transparent;
-    }
-
-    .setting-row select {
-      min-width: 140px;
-      padding: 6px 10px;
-      border: none;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.2);
-      color: #fff;
-      font-size: 12px;
-      outline: none;
-      box-shadow: 0 0 0 rgba(0,0,0,0);
-      transition: background 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .setting-row select:hover, .setting-row select:focus {
-      background: rgba(255,255,255,0.28);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    }
-
-    .setting-row select option {
-      color: #000;
-    }
-
-    /* Range slider styling */
-    .setting-row input[type="range"] {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 160px;
-      height: 6px;
-      border-radius: 4px;
-      background: rgba(255,255,255,0.25);
-      outline: none;
-    }
-    .setting-row input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #fff;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    }
-    .setting-row input[type="range"]::-moz-range-thumb {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #fff;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      border: none;
-    }
-
-    .progress-bar {
-      width: 100%;
-      height: 4px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 2px;
-      margin: 15px 0;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: white;
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-
-    .session-counter {
-      font-size: 14px;
-      margin: 10px 0;
-    }
-
-    .current-site {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-bottom: 10px;
-      word-break: break-all;
-    }
+    /* Hamburger menu overlay */
+    .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display:none; z-index: 999; }
+  .menu-panel { position:absolute; top: 10px; right: 10px; left: 10px; border:1px solid var(--border); border-radius:12px; padding:16px; background: var(--card); }
+    .menu-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .menu-header span { font-weight:600; }
+    .menu-item { width:100%; text-align:left; margin:6px 0; }
   </style>
 </head>
 <body>
@@ -205,9 +42,7 @@
     <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
       <h1 style="margin:0;">🍅 Focus Blocker</h1>
       <div style="display:flex; gap:8px;">
-        <button id="openLogBtn" title="Open Reflection Log" style="width:auto; padding:6px 10px; border-radius:8px; font-size:16px;">📖</button>
-        <button id="openManageBtn" title="Manage Blocked Sites" style="width:auto; padding:6px 10px; border-radius:8px; font-size:16px;">🚫</button>
-        <button id="openStatsBtn" title="View Stats" style="width:auto; padding:6px 10px; border-radius:8px; font-size:16px;">📊</button>
+        <button id="menuBtn" title="Menu" style="width:auto; padding:6px 10px; border-radius:8px; font-size:16px;">☰</button>
       </div>
     </div>
     
@@ -231,52 +66,34 @@
     </div>
     
     <div class="settings">
-      <div class="setting-row">
-        <label>Deep Work Routine:</label>
-        <input type="checkbox" id="deepWorkEnabled">
-      </div>
-      <div class="setting-row" id="deepWorkStepsRow" style="flex-direction:column; align-items:stretch; gap:8px; display:none;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
-          <label style="font-size:12px;">Steps</label>
-          <button id="addDeepWorkStepBtn" style="width:auto; padding:6px 10px; border-radius:8px; font-size:12px;">+ Add step</button>
+      <div class="times-row">
+        <div class="cell">
+          <label for="focusTime">Focus (min)</label>
+          <input type="number" id="focusTime" min="1" max="60" value="25">
         </div>
-        <div id="deepWorkStepsList" style="display:flex; flex-direction:column; gap:6px;"></div>
-        <div style="font-size:11px; opacity:0.85;">These steps must be checked off before focus starts.</div>
-      </div>
-      <div class="setting-row">
-        <label>Focus (min):</label>
-        <input type="number" id="focusTime" min="1" max="60" value="25">
-      </div>
-      <div class="setting-row">
-        <label>Break (min):</label>
-        <input type="number" id="breakTime" min="1" max="30" value="5">
-      </div>
-      <div class="setting-row">
-        <label>Long Break (min):</label>
-        <input type="number" id="longBreakTime" min="1" max="60" value="15">
-      </div>
-      <div class="setting-row">
-        <label>Sound on completion:</label>
-        <input type="checkbox" id="soundEnabled" checked>
-      </div>
-      <div class="setting-row">
-        <label>Sound choice:</label>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <select id="soundChoice">
-            <option value="Chime.mp3">Chime</option>
-            <option value="Electronic.mp3">Electronic</option>
-            <option value="Victory.mp3">Victory</option>
-          </select>
-          <button id="testSoundBtn" title="Play selected sound" style="width:auto; padding:6px 10px; border-radius:8px; font-size:12px;">▶</button>
+        <div class="cell">
+          <label for="breakTime">Break (min)</label>
+          <input type="number" id="breakTime" min="1" max="30" value="5">
+        </div>
+        <div class="cell">
+          <label for="longBreakTime">Long (min)</label>
+          <input type="number" id="longBreakTime" min="1" max="60" value="15">
         </div>
       </div>
-      <div class="setting-row">
-        <label>Volume:</label>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <input type="range" id="soundVolume" min="0" max="100" value="100" />
-          <span id="soundVolumeValue" style="min-width:38px; text-align:right; font-size:12px;">100%</span>
-        </div>
+    </div>
+  </div>
+
+  <!-- Menu Overlay -->
+  <div id="menuOverlay" class="menu-overlay">
+    <div class="menu-panel" role="dialog" aria-modal="true" aria-label="Menu">
+      <div class="menu-header">
+        <span>Menu</span>
+        <button id="closeMenuBtn" class="btn" style="width:auto; padding:6px 10px;">✕</button>
       </div>
+      <button id="menuLogBtn" class="menu-item">📖 Reflection Log</button>
+      <button id="menuStatsBtn" class="menu-item">📊 Stats</button>
+      <button id="menuBlockedBtn" class="menu-item">🚫 Manage Blocked Sites</button>
+      <button id="menuSettingsBtn" class="menu-item">⚙️ Settings</button>
     </div>
   </div>
 

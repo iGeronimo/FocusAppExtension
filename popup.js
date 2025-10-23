@@ -10,68 +10,15 @@ const currentSiteDiv = document.getElementById('currentSite');
 const focusTimeInput = document.getElementById('focusTime');
 const breakTimeInput = document.getElementById('breakTime');
 const longBreakTimeInput = document.getElementById('longBreakTime');
-const soundEnabledInput = document.getElementById('soundEnabled');
-const soundChoiceSelect = document.getElementById('soundChoice');
-const testSoundBtn = document.getElementById('testSoundBtn');
-const soundVolumeInput = document.getElementById('soundVolume');
-const soundVolumeValue = document.getElementById('soundVolumeValue');
-const openLogBtn = document.getElementById('openLogBtn');
-const openManageBtn = document.getElementById('openManageBtn');
-const openStatsBtn = document.getElementById('openStatsBtn');
-const deepWorkEnabledInput = document.getElementById('deepWorkEnabled');
-const deepWorkStepsRow = document.getElementById('deepWorkStepsRow');
-const deepWorkStepsList = document.getElementById('deepWorkStepsList');
-const addDeepWorkStepBtn = document.getElementById('addDeepWorkStepBtn');
+const menuBtn = document.getElementById('menuBtn');
+const menuOverlay = document.getElementById('menuOverlay');
+const closeMenuBtn = document.getElementById('closeMenuBtn');
+const menuLogBtn = document.getElementById('menuLogBtn');
+const menuStatsBtn = document.getElementById('menuStatsBtn');
+const menuBlockedBtn = document.getElementById('menuBlockedBtn');
+const menuSettingsBtn = document.getElementById('menuSettingsBtn');
 
-function createStepInput(value = '') {
-  const wrapper = document.createElement('div');
-  wrapper.style.display = 'flex';
-  wrapper.style.alignItems = 'center';
-  wrapper.style.gap = '6px';
-
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'deep-step-input';
-  input.placeholder = 'Step description';
-  input.value = value;
-  input.style.cssText = 'flex:1; padding:8px; border:none; border-radius:8px; background: rgba(255,255,255,0.18); color:#fff; font-size:12px; outline:none;';
-  input.addEventListener('change', saveSettings);
-
-  const delBtn = document.createElement('button');
-  delBtn.textContent = '🗑️';
-  delBtn.title = 'Remove step';
-  delBtn.style.cssText = 'width:auto; padding:6px 8px; border-radius:8px; font-size:12px;';
-  delBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    wrapper.remove();
-    await saveSettings();
-  });
-
-  wrapper.appendChild(input);
-  wrapper.appendChild(delBtn);
-  return wrapper;
-}
-
-function getDeepWorkStepsFromDOM() {
-  const inputs = deepWorkStepsList?.querySelectorAll('.deep-step-input') || [];
-  const steps = [];
-  inputs.forEach((inp) => {
-    const v = (inp.value || '').trim();
-    if (v) steps.push(v);
-  });
-  return steps;
-}
-
-function renderDeepWorkSteps(steps = []) {
-  if (!deepWorkStepsList) return;
-  deepWorkStepsList.innerHTML = '';
-  const list = Array.isArray(steps) ? steps : [];
-  if (list.length === 0) {
-    deepWorkStepsList.appendChild(createStepInput(''));
-  } else {
-    list.forEach(s => deepWorkStepsList.appendChild(createStepInput(s)));
-  }
-}
+// Deep work and sound settings are managed in settings.html
 
 let currentTabUrl = '';
 
@@ -80,19 +27,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
   await updateDisplay();
   await getCurrentSite();
-  // Wire nav buttons
-  openLogBtn?.addEventListener('click', () => {
-    const url = chrome.runtime.getURL('reflection-log.html');
-    chrome.tabs.create({ url });
+  // Menu overlay wiring
+  const openMenu = () => { if (menuOverlay) menuOverlay.style.display = 'block'; };
+  const closeMenu = () => { if (menuOverlay) menuOverlay.style.display = 'none'; };
+  menuBtn?.addEventListener('click', openMenu);
+  closeMenuBtn?.addEventListener('click', closeMenu);
+  menuOverlay?.addEventListener('click', (e) => {
+    if (e.target === menuOverlay) closeMenu();
   });
-  openManageBtn?.addEventListener('click', () => {
-    const url = chrome.runtime.getURL('manage-blocked.html');
-    chrome.tabs.create({ url });
-  });
-  openStatsBtn?.addEventListener('click', () => {
-    const url = chrome.runtime.getURL('stats.html');
-    chrome.tabs.create({ url });
-  });
+  const openTab = (path) => { const url = chrome.runtime.getURL(path); chrome.tabs.create({ url }); closeMenu(); };
+  menuLogBtn?.addEventListener('click', () => openTab('reflection-log.html'));
+  menuStatsBtn?.addEventListener('click', () => openTab('stats.html'));
+  menuBlockedBtn?.addEventListener('click', () => openTab('manage-blocked.html'));
+  menuSettingsBtn?.addEventListener('click', () => openTab('settings.html'));
 });
 
 // Get current site information
@@ -203,29 +150,12 @@ async function loadSettings() {
   const result = await chrome.storage.sync.get({
     focusTime: 25,
     breakTime: 5,
-    longBreakTime: 15,
-    soundEnabled: true,
-    soundChoice: 'Chime.mp3',
-    soundVolume: 1,
-    deepWorkEnabled: false,
-    deepWorkSteps: []
+    longBreakTime: 15
   });
   
   focusTimeInput.value = result.focusTime;
   breakTimeInput.value = result.breakTime;
   longBreakTimeInput.value = result.longBreakTime;
-  if (soundEnabledInput) soundEnabledInput.checked = !!result.soundEnabled;
-  if (soundChoiceSelect) soundChoiceSelect.value = result.soundChoice;
-  if (soundVolumeInput) {
-    const volPct = Math.round((result.soundVolume ?? 1) * 100);
-    soundVolumeInput.value = String(volPct);
-    if (soundVolumeValue) soundVolumeValue.textContent = `${volPct}%`;
-  }
-  if (deepWorkEnabledInput) {
-    deepWorkEnabledInput.checked = !!result.deepWorkEnabled;
-    if (deepWorkStepsRow) deepWorkStepsRow.style.display = result.deepWorkEnabled ? 'flex' : 'none';
-  }
-  renderDeepWorkSteps(result.deepWorkSteps);
 }
 
 // Save settings to storage and notify background script
@@ -233,12 +163,7 @@ async function saveSettings() {
   await chrome.storage.sync.set({
     focusTime: parseInt(focusTimeInput.value),
     breakTime: parseInt(breakTimeInput.value),
-    longBreakTime: parseInt(longBreakTimeInput.value),
-    soundEnabled: !!(soundEnabledInput && soundEnabledInput.checked),
-    soundChoice: soundChoiceSelect ? soundChoiceSelect.value : 'Chime.mp3',
-    soundVolume: soundVolumeInput ? (Number(soundVolumeInput.value) / 100) : 1,
-    deepWorkEnabled: !!(deepWorkEnabledInput && deepWorkEnabledInput.checked),
-    deepWorkSteps: getDeepWorkStepsFromDOM()
+    longBreakTime: parseInt(longBreakTimeInput.value)
   });
   
   // Notify background script that settings have changed
@@ -300,12 +225,11 @@ playPauseBtn.addEventListener('click', async () => {
     sendMessage('pauseTimer');
   } else {
     // Currently paused/stopped, so start
-    // Persist any in-UI changes (captures unsaved step inputs too)
+    // Persist time settings
     await saveSettings();
     // If deep work is enabled and we're about to start a focus session, open the deep work checklist window instead
     try {
-      // Prefer current DOM state to avoid race with storage writes
-      const deepWorkEnabled = !!(deepWorkEnabledInput && deepWorkEnabledInput.checked);
+      const { deepWorkEnabled = false } = await chrome.storage.sync.get({ deepWorkEnabled: false });
       if (!state.isRunning && state.mode === 'focus' && deepWorkEnabled) {
         chrome.runtime.sendMessage({ action: 'openDeepWorkWindow' });
       } else {
@@ -332,68 +256,7 @@ blockCurrentBtn.addEventListener('click', blockCurrentSite);
   input.addEventListener('change', saveSettings);
 });
 
-if (soundEnabledInput) {
-  soundEnabledInput.addEventListener('change', saveSettings);
-}
-if (deepWorkEnabledInput) {
-  deepWorkEnabledInput.addEventListener('change', async () => {
-    if (deepWorkStepsRow) deepWorkStepsRow.style.display = deepWorkEnabledInput.checked ? 'flex' : 'none';
-    await saveSettings();
-  });
-}
-if (addDeepWorkStepBtn) {
-  addDeepWorkStepBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    if (!deepWorkStepsList) return;
-    const el = createStepInput('');
-    deepWorkStepsList.appendChild(el);
-    const input = el.querySelector('input');
-    input?.focus();
-    await saveSettings();
-  });
-}
-if (soundChoiceSelect) {
-  soundChoiceSelect.addEventListener('change', saveSettings);
-}
-
-if (soundVolumeInput) {
-  const updateVolumeLabel = () => {
-    const vol = Number(soundVolumeInput.value);
-    if (soundVolumeValue) soundVolumeValue.textContent = `${vol}%`;
-  };
-  soundVolumeInput.addEventListener('input', updateVolumeLabel);
-  soundVolumeInput.addEventListener('change', async () => {
-    updateVolumeLabel();
-    await saveSettings();
-  });
-}
-
-if (testSoundBtn) {
-  testSoundBtn.addEventListener('click', async () => {
-    const choice = soundChoiceSelect ? soundChoiceSelect.value : 'Chime.mp3';
-    const vol = soundVolumeInput ? (Number(soundVolumeInput.value) / 100) : 1;
-    console.log('[Popup] Test sound clicked', { choice, vol });
-    // Play locally in popup to avoid offscreen dependency
-    try {
-      const url = chrome.runtime.getURL(`sound/${choice}`);
-      const audio = new Audio(url);
-      audio.volume = Math.max(0, Math.min(1, vol));
-      await audio.play();
-      console.log('[Popup] Local test playback started');
-    } catch (e) {
-      console.warn('[Popup] Local test playback error', e);
-    }
-    // Send a log-only message to background (no echo playback)
-    chrome.runtime.sendMessage({ action: 'testSound', soundChoice: choice, soundVolume: vol, noEcho: true }, () => {
-      const err = chrome.runtime.lastError;
-      if (err) {
-        console.warn('[Popup] testSound sendMessage error:', err);
-      } else {
-        console.log('[Popup] testSound message sent');
-      }
-    });
-  });
-}
+// removed sound/deep work controls and listeners from popup
 
 // Fallback: if background broadcasts play-sound and popup is open, play it here
 chrome.runtime.onMessage.addListener((msg) => {

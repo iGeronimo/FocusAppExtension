@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { padding: 20px; display:flex; justify-content:center; }
+    .container { padding: 20px; width: min(620px, 96vw); }
+    h1 { margin: 0 0 10px 0; font-size: 24px; }
+    .section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:8px 0; }
+    .row label { font-size: 13px; }
+    .row .field { display:flex; gap:8px; align-items:center; }
+    .steps { display:flex; flex-direction:column; gap:6px; }
+    .steps .item { display:flex; align-items:center; gap:6px; }
+    .hint { color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Settings</h1>
+
+    <div class="section">
+      <h3>Sound</h3>
+      <div class="row">
+        <label for="soundEnabled">Sound on completion</label>
+        <input type="checkbox" id="soundEnabled" />
+      </div>
+      <div class="row">
+        <label>Sound choice</label>
+        <div class="field">
+          <select id="soundChoice">
+            <option value="Chime.mp3">Chime</option>
+            <option value="Electronic.mp3">Electronic</option>
+            <option value="Victory.mp3">Victory</option>
+          </select>
+          <button id="testSoundBtn" class="btn" style="padding:6px 10px;">Test ▶</button>
+        </div>
+      </div>
+      <div class="row">
+        <label>Volume</label>
+        <div class="field">
+          <input type="range" id="soundVolume" min="0" max="100" value="100" />
+          <span id="soundVolumeValue" class="hint">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Deep Work Routine</h3>
+      <div class="row">
+        <label for="deepWorkEnabled">Enable Deep Work</label>
+        <input type="checkbox" id="deepWorkEnabled" />
+      </div>
+      <div class="steps" id="deepWorkStepsBlock" style="display:none;">
+        <div class="row" style="justify-content:space-between;">
+          <label class="hint">Steps (must be checked before focus starts)</label>
+          <button id="addDeepWorkStepBtn" class="btn" style="padding:6px 10px;">+ Add step</button>
+        </div>
+        <div id="deepWorkStepsList" class="steps"></div>
+      </div>
+    </div>
+
+    <div class="section" style="border:none; padding-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+      <button id="closeBtn" class="btn">Done</button>
+    </div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

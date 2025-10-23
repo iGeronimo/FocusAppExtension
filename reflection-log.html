@@ -4,46 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reflection Log</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      padding: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-    }
-
-    .container {
-      background: rgba(255, 255, 255, 0.1);
-      padding: 30px;
-      border-radius: 20px;
-      backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      max-width: 900px;
-      width: 95%;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      margin-top: 24px;
-    }
-
-    h1 {
-      font-size: 32px;
-      margin-bottom: 10px;
-      color: #ffdf6b;
-      font-weight: 400;
-    }
-
-    .subtitle {
-      font-size: 16px;
-      margin-bottom: 20px;
-      opacity: 0.9;
-      line-height: 1.4;
-    }
+    body { text-align:center; padding:20px; display:flex; flex-direction:column; align-items:center; }
+    .container { padding: 24px; max-width: 900px; width:95%; margin-top: 24px; }
+    h1 { font-size: 28px; margin-bottom: 8px; font-weight: 600; }
+    .subtitle { font-size: 14px; margin-bottom: 16px; line-height: 1.4; }
 
     .toolbar {
       display: flex;
@@ -53,21 +19,7 @@
       margin-bottom: 16px;
     }
 
-    .nav-button {
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      color: white;
-      padding: 10px 18px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.3s ease;
-    }
-
-    .nav-button:hover { background: rgba(255, 255, 255, 0.3); transform: translateY(-2px); }
-
-    .primary-button { background: rgba(76, 175, 80, 0.3); border-color: rgba(76, 175, 80, 0.7); }
-    .primary-button:hover { background: rgba(76, 175, 80, 0.4); }
+    .nav-button { font-size:14px; }
 
     .log-list {
       display: grid;
@@ -77,22 +29,12 @@
       text-align: left;
     }
 
-    .log-card {
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      border-radius: 12px;
-      padding: 14px;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .log-meta { font-size: 12px; opacity: 0.9; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-    .log-reason { font-weight: 600; color: #ffd700; }
+    .log-card { border: 1px solid var(--border); border-radius: 12px; padding: 14px; display:flex; flex-direction:column; gap:8px; }
+    .log-meta { font-size: 12px; color: var(--muted); display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .log-reason { font-weight: 600; }
     .log-text { white-space: pre-wrap; font-size: 14px; line-height: 1.4; }
 
-    .empty { opacity: 0.9; margin: 24px 0 8px; }
+    .empty { color: var(--muted); margin: 24px 0 8px; }
   </style>
 </head>
 <body>

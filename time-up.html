@@ -3,33 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <title>Time's up</title>
+  <link rel="stylesheet" href="styles.css">
   <style>
-    body {
-      width: 320px;
-      height: 210px;
-      margin: 0;
-      padding: 16px;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #fff;
-    }
+    body { width: 320px; height: 210px; margin: 0; padding: 16px; box-sizing: border-box; }
     h2 { margin: 0 0 8px 0; font-weight: 600; }
-    p { margin: 0 0 16px 0; opacity: 0.9; }
+    p { margin: 0 0 16px 0; }
     .row { display:flex; gap: 10px; margin-top: 10px; }
-    button {
-      flex: 1;
-      background: rgba(255,255,255,0.2);
-      border: 2px solid rgba(255,255,255,0.3);
-      color: white;
-      padding: 10px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.2s ease;
-    }
-    button:hover { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
-    .muted { font-size: 12px; opacity: 0.8; margin-top: 8px; }
+    button { flex:1; }
+    .muted { font-size: 12px; color: var(--muted); margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -38,13 +19,13 @@
   <div class="two-col" style="display:flex; gap:10px;">
     <div class="col" style="flex:1; display:flex; flex-direction:column; gap:8px;">
       <button id="startBreakBtn">☕ Start break</button>
-      <label for="breakMinutes" style="font-size:12px; opacity:0.9; text-align:left;">Break (min)</label>
-      <input id="breakMinutes" type="number" min="1" max="180" style="padding:6px 8px; border:none; border-radius:8px; background: rgba(255,255,255,0.2); color:#fff;">
+      <label for="breakMinutes" style="font-size:12px; text-align:left;">Break (min)</label>
+      <input id="breakMinutes" type="number" min="1" max="180" style="padding:6px 8px;">
     </div>
     <div class="col" style="flex:1; display:flex; flex-direction:column; gap:8px;">
       <button id="startFocusBtn">🎯 Start focus</button>
-      <label for="focusMinutes" style="font-size:12px; opacity:0.9; text-align:left;">Focus (min)</label>
-      <input id="focusMinutes" type="number" min="1" max="180" style="padding:6px 8px; border:none; border-radius:8px; background: rgba(255,255,255,0.2); color:#fff;">
+      <label for="focusMinutes" style="font-size:12px; text-align:left;">Focus (min)</label>
+      <input id="focusMinutes" type="number" min="1" max="180" style="padding:6px 8px;">
     </div>
   </div>
   <div class="muted" id="details"></div>
