@@ -18,6 +18,60 @@ const soundVolumeValue = document.getElementById('soundVolumeValue');
 const openLogBtn = document.getElementById('openLogBtn');
 const openManageBtn = document.getElementById('openManageBtn');
 const openStatsBtn = document.getElementById('openStatsBtn');
+const deepWorkEnabledInput = document.getElementById('deepWorkEnabled');
+const deepWorkStepsRow = document.getElementById('deepWorkStepsRow');
+const deepWorkStepsList = document.getElementById('deepWorkStepsList');
+const addDeepWorkStepBtn = document.getElementById('addDeepWorkStepBtn');
+
+function createStepInput(value = '') {
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'flex';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.gap = '6px';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'deep-step-input';
+  input.placeholder = 'Step description';
+  input.value = value;
+  input.style.cssText = 'flex:1; padding:8px; border:none; border-radius:8px; background: rgba(255,255,255,0.18); color:#fff; font-size:12px; outline:none;';
+  input.addEventListener('change', saveSettings);
+
+  const delBtn = document.createElement('button');
+  delBtn.textContent = '🗑️';
+  delBtn.title = 'Remove step';
+  delBtn.style.cssText = 'width:auto; padding:6px 8px; border-radius:8px; font-size:12px;';
+  delBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    wrapper.remove();
+    await saveSettings();
+  });
+
+  wrapper.appendChild(input);
+  wrapper.appendChild(delBtn);
+  return wrapper;
+}
+
+function getDeepWorkStepsFromDOM() {
+  const inputs = deepWorkStepsList?.querySelectorAll('.deep-step-input') || [];
+  const steps = [];
+  inputs.forEach((inp) => {
+    const v = (inp.value || '').trim();
+    if (v) steps.push(v);
+  });
+  return steps;
+}
+
+function renderDeepWorkSteps(steps = []) {
+  if (!deepWorkStepsList) return;
+  deepWorkStepsList.innerHTML = '';
+  const list = Array.isArray(steps) ? steps : [];
+  if (list.length === 0) {
+    deepWorkStepsList.appendChild(createStepInput(''));
+  } else {
+    list.forEach(s => deepWorkStepsList.appendChild(createStepInput(s)));
+  }
+}
 
 let currentTabUrl = '';
 
@@ -152,7 +206,9 @@ async function loadSettings() {
     longBreakTime: 15,
     soundEnabled: true,
     soundChoice: 'Chime.mp3',
-    soundVolume: 1
+    soundVolume: 1,
+    deepWorkEnabled: false,
+    deepWorkSteps: []
   });
   
   focusTimeInput.value = result.focusTime;
@@ -165,6 +221,11 @@ async function loadSettings() {
     soundVolumeInput.value = String(volPct);
     if (soundVolumeValue) soundVolumeValue.textContent = `${volPct}%`;
   }
+  if (deepWorkEnabledInput) {
+    deepWorkEnabledInput.checked = !!result.deepWorkEnabled;
+    if (deepWorkStepsRow) deepWorkStepsRow.style.display = result.deepWorkEnabled ? 'flex' : 'none';
+  }
+  renderDeepWorkSteps(result.deepWorkSteps);
 }
 
 // Save settings to storage and notify background script
@@ -175,7 +236,9 @@ async function saveSettings() {
     longBreakTime: parseInt(longBreakTimeInput.value),
     soundEnabled: !!(soundEnabledInput && soundEnabledInput.checked),
     soundChoice: soundChoiceSelect ? soundChoiceSelect.value : 'Chime.mp3',
-    soundVolume: soundVolumeInput ? (Number(soundVolumeInput.value) / 100) : 1
+    soundVolume: soundVolumeInput ? (Number(soundVolumeInput.value) / 100) : 1,
+    deepWorkEnabled: !!(deepWorkEnabledInput && deepWorkEnabledInput.checked),
+    deepWorkSteps: getDeepWorkStepsFromDOM()
   });
   
   // Notify background script that settings have changed
@@ -237,13 +300,20 @@ playPauseBtn.addEventListener('click', async () => {
     sendMessage('pauseTimer');
   } else {
     // Currently paused/stopped, so start
-    // Save settings before starting (but only if we're at the beginning of a session)
-    if (state.timeLeft === 0 || (state.mode === 'focus' && state.timeLeft === state.settings.focusTime * 60) ||
-        (state.mode === 'break' && state.timeLeft === state.settings.breakTime * 60) ||
-        (state.mode === 'longBreak' && state.timeLeft === state.settings.longBreakTime * 60)) {
-      await saveSettings();
+    // Persist any in-UI changes (captures unsaved step inputs too)
+    await saveSettings();
+    // If deep work is enabled and we're about to start a focus session, open the deep work checklist window instead
+    try {
+      // Prefer current DOM state to avoid race with storage writes
+      const deepWorkEnabled = !!(deepWorkEnabledInput && deepWorkEnabledInput.checked);
+      if (!state.isRunning && state.mode === 'focus' && deepWorkEnabled) {
+        chrome.runtime.sendMessage({ action: 'openDeepWorkWindow' });
+      } else {
+        sendMessage('startTimer');
+      }
+    } catch {
+      sendMessage('startTimer');
     }
-    sendMessage('startTimer');
   }
   
   // Update display after a short delay to let background script process
@@ -264,6 +334,23 @@ blockCurrentBtn.addEventListener('click', blockCurrentSite);
 
 if (soundEnabledInput) {
   soundEnabledInput.addEventListener('change', saveSettings);
+}
+if (deepWorkEnabledInput) {
+  deepWorkEnabledInput.addEventListener('change', async () => {
+    if (deepWorkStepsRow) deepWorkStepsRow.style.display = deepWorkEnabledInput.checked ? 'flex' : 'none';
+    await saveSettings();
+  });
+}
+if (addDeepWorkStepBtn) {
+  addDeepWorkStepBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    if (!deepWorkStepsList) return;
+    const el = createStepInput('');
+    deepWorkStepsList.appendChild(el);
+    const input = el.querySelector('input');
+    input?.focus();
+    await saveSettings();
+  });
 }
 if (soundChoiceSelect) {
   soundChoiceSelect.addEventListener('change', saveSettings);

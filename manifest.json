@@ -59,6 +59,8 @@
         "stats.js",
         "time-up.html",
         "time-up.js",
+  "deep-work.html",
+  "deep-work.js",
         "offscreen.html",
         "offscreen.js",
         "sound/*"

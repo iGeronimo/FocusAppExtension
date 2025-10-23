@@ -277,6 +277,18 @@ async function openTimeUpWindow() {
   timeUpWindowId = win.id || null;
 }
 
+// Deep Work checklist window helpers
+let deepWorkWindowId = null;
+async function openDeepWorkWindow() {
+  if (deepWorkWindowId !== null) {
+    try { await chrome.windows.update(deepWorkWindowId, { focused: true }); return; } catch {}
+    deepWorkWindowId = null;
+  }
+  const url = chrome.runtime.getURL('deep-work.html');
+  const win = await chrome.windows.create({ url, type: 'popup', width: 420, height: 360, focused: true });
+  deepWorkWindowId = win.id || null;
+}
+
 // Update extension badge
 function updateBadge() {
   let badgeText = '';
@@ -467,6 +479,33 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         startTimer();
       }
       break;
+    case 'openDeepWorkWindow': {
+      openDeepWorkWindow().catch((e) => console.warn('[BG] openDeepWorkWindow error', e));
+      try { sendResponse({ ok: true }); } catch {}
+      return true;
+    }
+    case 'deepWorkApproved': {
+      // User finished the checklist; start a focus session
+      (async () => {
+        try {
+          timerState.mode = 'focus';
+          // Initialize duration for a clean start
+          timerState.timeLeft = (timerState.settings?.focusTime || 25) * 60;
+          await saveTimerState();
+          startTimer();
+          // Close the window if still open
+          if (deepWorkWindowId !== null) {
+            try { await chrome.windows.remove(deepWorkWindowId); } catch {}
+            deepWorkWindowId = null;
+          }
+          try { sendResponse({ ok: true }); } catch {}
+        } catch (e) {
+          console.warn('[BG] deepWorkApproved error', e);
+          try { sendResponse({ ok: false, error: String(e) }); } catch {}
+        }
+      })();
+      return true;
+    }
 
     case 'pauseTimer':
       pauseTimer();
@@ -545,6 +584,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 chrome.windows?.onRemoved.addListener((id) => {
   if (id === timeUpWindowId) {
     timeUpWindowId = null;
+  }
+  if (id === deepWorkWindowId) {
+    deepWorkWindowId = null;
   }
 });
 
