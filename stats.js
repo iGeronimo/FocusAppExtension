@@ -263,7 +263,51 @@ async function render() {
     ctx.fillText('No distraction categories to display yet', distractionsCanvas.width / 2, distractionsCanvas.height / 2);
   } else {
     const ctx2 = distractionsCanvas.getContext('2d');
-  distractionsChartInstance = new Chart(ctx2, { type: 'bar', data: { labels, datasets: [{ label: 'Distractions (14 days)', data: values, backgroundColor: '#fff', borderColor: '#fff', borderWidth: 1.5, hoverBackgroundColor: 'rgba(255,255,255,0.85)' }]}, options: { indexAxis: 'x', scales: { x: { ticks: { color: '#fff' } }, y: { ticks: { color: '#fff', precision: 0 } , beginAtZero: true } }, plugins: { legend: { labels: { color: '#fff' } } } } });
+    // Build a stable color per category using a palette + hash of the label
+    const palette = [
+      '#29B6F6', // light blue
+      '#FF7043', // deep orange
+      '#AB47BC', // purple
+      '#26A69A', // teal
+      '#FFCA28', // amber
+      '#EC407A', // pink
+      '#66BB6A', // green
+      '#7E57C2', // deep purple
+      '#FFA726', // orange
+      '#EF5350', // red
+      '#26C6DA', // cyan
+      '#9CCC65'  // light green
+    ];
+    const hashString = (s = '') => {
+      let h = 0;
+      for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+      return Math.abs(h);
+    };
+    const bgColors = labels.map(l => palette[hashString(l) % palette.length]);
+    const borderColors = bgColors;
+
+    distractionsChartInstance = new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Distractions (14 days)',
+          data: values,
+          backgroundColor: bgColors,
+          borderColor: borderColors,
+          borderWidth: 1.5,
+          hoverBackgroundColor: bgColors.map(c => c)
+        }]
+      },
+      options: {
+        indexAxis: 'x',
+        scales: {
+          x: { ticks: { color: '#fff' } },
+          y: { ticks: { color: '#fff', precision: 0 }, beginAtZero: true }
+        },
+        plugins: { legend: { labels: { color: '#fff' } } }
+      }
+    });
   }
 }
 
