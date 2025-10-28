@@ -27,6 +27,7 @@ function setStorage(obj, area = 'local') {
 // Keep chart instances to destroy before re-rendering
 let sessionsChartInstance = null;
 let distractionsChartInstance = null;
+let currentWindow = 'monthly';
 
 // Visible boot log and error capture to aid debugging in the Stats page
 try { console.log('[Stats] script loaded'); } catch {}
@@ -65,6 +66,77 @@ const valueLabelPlugin = {
     } catch {}
   }
 };
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+function dayKeyLocal(d) { return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+function monthKeyLocal(d) { return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`; }
+
+function getSinceForWindow(win, now = new Date()) {
+  switch (win) {
+    case 'weekly': return new Date(now.getTime() - 7*24*60*60*1000);
+    case 'monthly': return new Date(now.getTime() - 30*24*60*60*1000);
+    case 'yearly': return new Date(now.getTime() - 365*24*60*60*1000);
+    case 'all': default: return null;
+  }
+}
+
+function buildFocusSeries(focusHistory, win, now = new Date()) {
+  const data = Array.isArray(focusHistory) ? focusHistory : [];
+  const dayMs = 24*60*60*1000;
+  if (win === 'weekly' || win === 'monthly') {
+    const len = (win === 'weekly') ? 7 : 30;
+    const baseLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const days = Array.from({ length: len }).map((_, i) => dayKeyLocal(new Date(baseLocal.getTime() - (len-1 - i)*dayMs)));
+    const earliestLocal = new Date(baseLocal.getTime() - (len-1)*dayMs);
+    const localMap = new Map();
+    for (const s of data) {
+      if (!s || (!s.endedAt && !s.startedAt)) continue;
+      const dt = s.endedAt ? new Date(s.endedAt) : (s.startedAt ? new Date(s.startedAt) : null);
+      if (!dt || isNaN(dt.getTime())) continue;
+      if (dt < earliestLocal || dt > new Date(now.getTime() + 1)) continue;
+      const key = dayKeyLocal(dt);
+      localMap.set(key, (localMap.get(key) || 0) + Number(s.durationSec || 0));
+    }
+    const minutes = days.map(d => Math.round((localMap.get(d) || 0) / 60));
+    return { labels: days, minutes };
+  }
+  // Monthly buckets for yearly/all-time
+  // Determine month keys range
+  let startDate;
+  if (win === 'yearly') {
+    startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+  } else {
+    // all-time
+    let min = null;
+    for (const s of data) {
+      const dt = s?.endedAt ? new Date(s.endedAt) : (s?.startedAt ? new Date(s.startedAt) : null);
+      if (!dt || isNaN(dt)) continue;
+      if (!min || dt < min) min = dt;
+    }
+    startDate = min ? new Date(min.getFullYear(), min.getMonth(), 1) : new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+  const endDate = new Date(now.getFullYear(), now.getMonth(), 1);
+  const months = [];
+  const monthKeys = [];
+  let cursor = new Date(startDate);
+  // generate month labels from start to end inclusive
+  while (cursor <= endDate) {
+    monthKeys.push(monthKeyLocal(cursor));
+    months.push(new Date(cursor));
+    cursor = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1);
+    if (monthKeys.length > 240) break; // safety cap at 20 years
+  }
+  const map = new Map();
+  for (const s of data) {
+    if (!s || (!s.endedAt && !s.startedAt)) continue;
+    const dt = s.endedAt ? new Date(s.endedAt) : (s.startedAt ? new Date(s.startedAt) : null);
+    if (!dt || isNaN(dt.getTime())) continue;
+    const key = monthKeyLocal(dt);
+    map.set(key, (map.get(key) || 0) + Number(s.durationSec || 0));
+  }
+  const minutes = monthKeys.map(k => Math.round((map.get(k) || 0) / 60));
+  return { labels: monthKeys, minutes };
+}
 
 async function loadData() {
   const [focusHistory, distractionAnalytics] = await Promise.all([
@@ -144,53 +216,10 @@ async function render() {
   document.getElementById('metricDistractionsThisWeek').textContent = `${weekDistractions.length}`;
   document.getElementById('metricTopReason').textContent = topReason(analytics, new Date(Date.now() - 7*24*60*60*1000));
 
-  // Focus time per day (last 14 days) using LOCAL day keys consistently
-  const pad2 = (n) => String(n).padStart(2, '0');
-  const dayKeyLocal = (d) => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-  const baseLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const days = Array.from({ length: 14 }).map((_, i) => {
-    const d = new Date(baseLocal.getTime() - (13 - i) * 24 * 60 * 60 * 1000);
-    return dayKeyLocal(d);
-  });
-  const dayMs = 24 * 60 * 60 * 1000;
-  const earliestLocal = new Date(baseLocal.getTime() - 13 * dayMs);
-  const localMap = new Map();
-  for (const s of Array.isArray(focusHistory) ? focusHistory : []) {
-    if (!s || !s.endedAt) continue;
-    const dt = new Date(s.endedAt);
-    if (!(dt instanceof Date) || isNaN(dt.getTime())) continue;
-    if (dt < earliestLocal || dt > new Date(now.getTime() + 1)) continue; // within visible 14-day window
-    const key = dayKeyLocal(dt);
-    localMap.set(key, (localMap.get(key) || 0) + Number(s.durationSec || 0));
-  }
-  let minutesData = days.map(d => Math.round((localMap.get(d) || 0) / 60));
-  try { console.log('[Stats] Focus minutes pre-fallback', { days, minutesData }); } catch {}
-  if (!minutesData.some(v => v > 0) && (Array.isArray(focusHistory) && focusHistory.length)) {
-    // Try bucketing by startedAt as a fallback
-    const startedMap = new Map();
-    for (const s of focusHistory) {
-      if (!s || !s.startedAt) continue;
-      const ds = new Date(s.startedAt);
-      if (!(ds instanceof Date) || isNaN(ds.getTime())) continue;
-      if (ds < earliestLocal || ds > new Date(now.getTime() + 1)) continue;
-      const keyS = dayKeyLocal(ds);
-      startedMap.set(keyS, (startedMap.get(keyS) || 0) + Number(s.durationSec || 0));
-    }
-    const minutesByStart = days.map(d => Math.round((startedMap.get(d) || 0) / 60));
-    let merged = false;
-    if (minutesByStart.some(v => v > 0)) {
-      for (let i = 0; i < days.length; i++) {
-        if ((localMap.get(days[i]) || 0) === 0 && (startedMap.get(days[i]) || 0) > 0) {
-          localMap.set(days[i], startedMap.get(days[i]));
-          merged = true;
-        }
-      }
-    }
-    if (merged) {
-      minutesData = days.map(d => Math.round((localMap.get(d) || 0) / 60));
-    }
-    try { console.log('[Stats] Focus minutes recompute attempt', { focusHistoryCount: Array.isArray(focusHistory) ? focusHistory.length : 0, lastDaySec: localMap.get(days[days.length-1]) || 0, minutesData }); } catch {}
-  }
+  // Build focus series based on selected window
+  const series = buildFocusSeries(focusHistory, currentWindow, now);
+  const days = series.labels;
+  let minutesData = series.minutes;
   const sessionsCanvas = document.getElementById('sessionsChart');
   // Destroy any existing chart before drawing
   try { const existing = Chart.getChart(sessionsCanvas); if (existing) existing.destroy(); } catch {}
@@ -239,9 +268,14 @@ async function render() {
     });
   }
 
-  // Distractions by category (last 14 days)
-  const since = new Date(Date.now() - 14*24*60*60*1000);
-  const recentDistractions = analytics.filter(a => new Date(a.timestamp) >= since);
+  // Distractions by category based on selected window
+  const since = getSinceForWindow(currentWindow, now);
+  const recentDistractions = Array.isArray(analytics)
+    ? analytics.filter(a => {
+        const t = new Date(a.timestamp);
+        return since ? (t >= since) : true;
+      })
+    : [];
   const catCounts = new Map();
   recentDistractions.forEach(a => {
     const k = (a.reason || a.category || 'other').toString().toLowerCase();
@@ -291,7 +325,7 @@ async function render() {
       data: {
         labels,
         datasets: [{
-          label: 'Distractions (14 days)',
+          label: 'Distractions',
           data: values,
           backgroundColor: bgColors,
           borderColor: borderColors,
@@ -315,11 +349,30 @@ function clearFocusHistory() { setStorage({ focusHistory: [] }, 'local').then(re
 
 function init() {
   try { console.log('[Stats] init()'); } catch {}
+  // restore saved window
+  try {
+    getStorage('statsTimeWindow', 'local').then(val => {
+      const saved = typeof val === 'string' ? val : (val?.statsTimeWindow || null);
+      if (saved && ['weekly','monthly','yearly','all'].includes(saved)) {
+        currentWindow = saved;
+      }
+      const sel = document.getElementById('timeWindow');
+      if (sel) sel.value = currentWindow;
+      render();
+    });
+  } catch { render(); }
+  const sel = document.getElementById('timeWindow');
+  if (sel) {
+    sel.addEventListener('change', (e) => {
+      currentWindow = e.target.value;
+      setStorage({ statsTimeWindow: currentWindow }, 'local');
+      render();
+    });
+  }
   document.getElementById('backBtn')?.addEventListener('click', () => history.back());
   document.getElementById('refreshBtn')?.addEventListener('click', render);
   document.getElementById('clearFocusHistoryBtn')?.addEventListener('click', clearFocusHistory);
-  try { console.log('[Stats] scheduling initial render'); } catch {}
-  render();
+  try { console.log('[Stats] scheduling initial render (deferred until window restore)'); } catch {}
 }
 
 document.addEventListener('DOMContentLoaded', init);

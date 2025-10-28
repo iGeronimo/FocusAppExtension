@@ -24,21 +24,31 @@
     <h1>Focus Stats</h1>
     <div class="subtitle">Overview of your recent focus and distractions</div>
 
+    <div class="toolbar" style="margin-bottom:8px; gap:8px;">
+      <label for="timeWindow" class="muted">Time window</label>
+      <select id="timeWindow">
+        <option value="weekly">Weekly (7 days)</option>
+        <option value="monthly" selected>Monthly (30 days)</option>
+        <option value="yearly">Yearly (12 months)</option>
+  <option value="all">All-time</option>
+      </select>
+    </div>
+
     <div class="grid">
       <div class="card">
-        <div class="metric" id="metricFocusThisMonth">–</div>
+        <div class="metric" id="metricFocusThisMonth">-</div>
         <div class="label">Total focus time (this month)</div>
       </div>
       <div class="card">
-        <div class="metric" id="metricSessionsThisMonth">–</div>
+        <div class="metric" id="metricSessionsThisMonth">-</div>
         <div class="label">Focus sessions completed (this month)</div>
       </div>
       <div class="card">
-        <div class="metric" id="metricDistractionsThisWeek">–</div>
+        <div class="metric" id="metricDistractionsThisWeek">-</div>
         <div class="label">Distractions (this week)</div>
       </div>
       <div class="card">
-        <div class="metric" id="metricTopReason">–</div>
+        <div class="metric" id="metricTopReason">-</div>
         <div class="label">Top distraction reason (7 days)</div>
       </div>
     </div>

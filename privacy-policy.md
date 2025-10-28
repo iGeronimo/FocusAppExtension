@@ -4,7 +4,7 @@
 
 ## Data Collection and Use  
 This extension does **not collect or transmit any personal data**.  
-- When the user fills in a short survey about distractions, the answers are stored **only locally on the user’s device**.  
+- When the user fills in a short survey about distractions, the answers are stored **only locally on the user's device**.  
 - This information is used exclusively to display statistics within the extension and help the user gain insights into their focus.  
 
 ## Permissions  

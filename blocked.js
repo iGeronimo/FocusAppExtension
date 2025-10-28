@@ -282,13 +282,13 @@ function generateInsight(reason) {
     return 'Boredom signals low engagement. Try a tiny, interesting sub-task or take a brief real break.';
   }
   if (r.includes('anxious')) {
-    return 'Anxiety seeks quick comfort. Try 3 deep breaths, a 1‑minute pause, or jot down the worry.';
+    return 'Anxiety seeks quick comfort. Try 3 deep breaths, a 1-minute pause, or jot down the worry.';
   }
   if (r.includes('stressed')) {
     return 'Stress drives distraction. Identify one small step to reduce it, or take a short walk/stretch.';
   }
   if (r.includes('tired') || r.includes('fatigue') || r.includes('exhaust')) {
-    return 'Your brain may need rest, not stimulation. Hydrate, move briefly, or consider a micro‑nap.';
+    return 'Your brain may need rest, not stimulation. Hydrate, move briefly, or consider a micro-nap.';
   }
   if (r.includes('overwhelmed')) {
     return 'Break the task into the smallest next step. Reducing scope reduces overwhelm.';
@@ -297,10 +297,10 @@ function generateInsight(reason) {
     return 'Reach out to a person directly—a short call or message beats passive scrolling.';
   }
   if (r.includes('procrast')) {
-    return 'Start a 5‑minute timer and do just the first step. Momentum beats perfection.';
+    return 'Start a 5-minute timer and do just the first step. Momentum beats perfection.';
   }
   if (r.includes('habit')) {
-    return 'This might be automatic. Add a 5‑second pause rule before opening habitual sites.';
+    return 'This might be automatic. Add a 5-second pause rule before opening habitual sites.';
   }
   if (r.includes('curious')) {
     return 'Curiosity is good—channel it. Jot the question, schedule time later, return to focus now.';
