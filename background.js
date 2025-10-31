@@ -23,6 +23,62 @@ let timerState = {
 let timerInterval = null;
 let offscreenReady = false;
 const offscreenWaiters = [];
+let isBlockingEnabled = false;
+let currentBlockedSites = [];
+let webReqListenerInstalled = false;
+
+function normalizeHost(h) {
+  try { return (h || '').toLowerCase(); } catch { return ''; }
+}
+
+function hostMatchesBlocked(host, blockedList) {
+  if (!host) return false;
+  const h = normalizeHost(host);
+  for (const site of blockedList) {
+    const s = normalizeHost(site);
+    if (!s) continue;
+    if (h === s || h === `www.${s}` || h.endsWith(`.${s}`)) return true;
+  }
+  return false;
+}
+
+function refreshWebRequestBlocking() {
+  try {
+    if (webReqListenerInstalled) {
+      chrome.webRequest.onBeforeRequest.removeListener(onBeforeRequestHandler);
+      webReqListenerInstalled = false;
+    }
+  } catch {}
+
+  if (!isBlockingEnabled || !Array.isArray(currentBlockedSites) || currentBlockedSites.length === 0) {
+    return;
+  }
+  try {
+    chrome.webRequest.onBeforeRequest.addListener(
+      onBeforeRequestHandler,
+      { urls: ["<all_urls>",], types: ["main_frame"] },
+      ["blocking"]
+    );
+    webReqListenerInstalled = true;
+  } catch (e) {
+    console.warn('[BG] Failed to add webRequest listener', e);
+  }
+}
+
+function onBeforeRequestHandler(details) {
+  try {
+    const url = details.url || '';
+    if (!/^https?:\/\//i.test(url)) return {};
+    const u = new URL(url);
+    if (!isBlockingEnabled) return {};
+    if (!hostMatchesBlocked(u.hostname, currentBlockedSites)) return {};
+    const blockedUrl = chrome.runtime.getURL('blocked.html');
+    const redirectUrl = `${blockedUrl}?from=${encodeURIComponent(url)}`;
+    return { redirectUrl };
+  } catch (e) {
+    return {};
+  }
+}
 
 // Initialize extension
 chrome.runtime.onInstalled.addListener(async () => {
@@ -134,7 +190,7 @@ async function handleTimerComplete() {
   // Send notification
   const notificationOptions = {
     type: 'basic',
-    iconUrl: 'icons/icon48.png',
+    iconUrl: 'icons/icon-16.png',
     title: 'Pomodoro Focus Blocker',
     message: ''
   };
@@ -321,117 +377,16 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
   }
 });
 
-// Function to update declarative net request rules
+// Function to update blocking using webRequest (Firefox compatible)
 async function updateBlockingRules(enableBlocking = true) {
   try {
-    // First, get ALL existing rules
-    const [dynamicRules, staticRules] = await Promise.all([
-      chrome.declarativeNetRequest.getDynamicRules(),
-      chrome.declarativeNetRequest.getSessionRules().catch(() => [])
-    ]);
-
-    // Clear ALL existing dynamic rules
-    const dynamicRuleIds = dynamicRules.map(rule => rule.id);
-    if (dynamicRuleIds.length > 0) {
-      await chrome.declarativeNetRequest.updateDynamicRules({
-        removeRuleIds: dynamicRuleIds
-      });
-      console.log(`Removed ${dynamicRuleIds.length} existing dynamic rules`);
-    }
-
-    // Also try to clear session rules if they exist
-    try {
-      const sessionRuleIds = staticRules.map(rule => rule.id);
-      if (sessionRuleIds.length > 0) {
-        await chrome.declarativeNetRequest.updateSessionRules({
-          removeRuleIds: sessionRuleIds
-        });
-      }
-    } catch (e) {
-      // Session rules might not be supported, ignore
-    }
-
-    // If blocking is disabled, stop here (rules are already cleared)
-    if (!enableBlocking) {
-      console.log('Website blocking disabled');
-      return;
-    }
-
+    isBlockingEnabled = !!enableBlocking;
     const result = await chrome.storage.sync.get(['blockedSites']);
-    const blockedSites = result.blockedSites || [];
-
-    if (blockedSites.length === 0) {
-      console.log('No sites to block');
-      return;
-    }
-
-    // Create new rules with guaranteed unique IDs starting from a high number
-    const newRules = [];
-    let ruleId = Math.floor(Date.now() / 1000); // Use timestamp to ensure uniqueness
-
-    blockedSites.forEach((site) => {
-      // Rule for any subdomain (*.site.com)
-      newRules.push({
-        id: ruleId++,
-        priority: 1,
-        action: {
-          type: 'redirect',
-          redirect: {
-            url: chrome.runtime.getURL('blocked.html')
-          }
-        },
-        condition: {
-          urlFilter: `*://*.${site}/*`,
-          resourceTypes: ['main_frame']
-        }
-      });
-
-      // Rule for exact domain (site.com)
-      newRules.push({
-        id: ruleId++,
-        priority: 1,
-        action: {
-          type: 'redirect',
-          redirect: {
-            url: chrome.runtime.getURL('blocked.html')
-          }
-        },
-        condition: {
-          urlFilter: `*://${site}/*`,
-          resourceTypes: ['main_frame']
-        }
-      });
-
-      // Rule for www specifically
-      newRules.push({
-        id: ruleId++,
-        priority: 1,
-        action: {
-          type: 'redirect',
-          redirect: {
-            url: chrome.runtime.getURL('blocked.html')
-          }
-        },
-        condition: {
-          urlFilter: `*://www.${site}/*`,
-          resourceTypes: ['main_frame']
-        }
-      });
-
-      console.log(`Created rules for: ${site}`);
-    });
-
-    if (newRules.length > 0) {
-      await chrome.declarativeNetRequest.updateDynamicRules({
-        addRules: newRules
-      });
-      console.log(`Added ${newRules.length} new blocking rules - blocking ENABLED`);
-    }
-
-    console.log(`Successfully updated blocking rules for ${blockedSites.length} sites`);
-
+    currentBlockedSites = Array.isArray(result.blockedSites) ? result.blockedSites : [];
+    refreshWebRequestBlocking();
+    console.log(`[BG] webRequest blocking ${isBlockingEnabled ? 'ENABLED' : 'disabled'} for ${currentBlockedSites.length} sites`);
   } catch (error) {
-    console.error('Error updating blocking rules:', error);
+    console.error('Error updating webRequest blocking:', error);
   }
 }
 
@@ -521,11 +476,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     case 'testBlocking':
       console.log('Testing blocking functionality...');
-      chrome.declarativeNetRequest.getDynamicRules().then(rules => {
-        console.log('Current active rules:', rules);
-        sendResponse({ success: true, rulesCount: rules.length });
-      });
-      return true; // Will respond asynchronously
+      try {
+        sendResponse({ success: true, webRequestInstalled: webReqListenerInstalled, sites: currentBlockedSites.length });
+      } catch {}
+      return true;
 
     case 'updateSettings':
       // Handle settings update from popup

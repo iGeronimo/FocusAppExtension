@@ -9,7 +9,7 @@ This extension does **not collect or transmit any personal data**.
 
 ## Permissions  
 The extension requests certain Chrome permissions in order to function properly:  
-- **`declarativeNetRequest` & host permissions:** used to temporarily block selected websites during a Pomodoro session.  
+- **webRequest & host permissions:** used to temporarily block selected websites during a Pomodoro session.  
 - **`tabs` and `activeTab`:** used to identify the current tab and apply blocking when needed.  
 
 These permissions are used **only** to enable the Pomodoro timer and website-blocking functionality.  
