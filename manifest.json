@@ -1,5 +1,5 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Pomodoro Focus Blocker",
   "version": "1.0.6",
   "description": "A Pomodoro timer with website blocking functionality to boost productivity",
@@ -11,19 +11,17 @@
     "tabs",
     "windows",
     "webRequest",
-    "webRequestBlocking"
-  ],
-  
-  "host_permissions": [
+    "webRequestBlocking",
     "<all_urls>"
   ],
   
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"],
+    "persistent": true
   },
 
   
-  "action": {
+  "browser_action": {
     "default_popup": "popup.html",
     "default_title": "Pomodoro Focus Blocker",
     "default_icon": {
@@ -44,28 +42,23 @@
   },
   
   "web_accessible_resources": [
-    {
-      "resources": [
-        "blocked.html",
-        "reflection-saved.html",
-  "reflection-saved.js",
-        "reflection-log.html",
-        "reflection-log.js",
-        "manage-blocked.html",
-        "manage-blocked.js",
+    "blocked.html",
+    "reflection-saved.html",
+    "reflection-saved.js",
+    "reflection-log.html",
+    "reflection-log.js",
+    "manage-blocked.html",
+    "manage-blocked.js",
     "settings.html",
     "settings.js",
-        "stats.html",
-        "stats.js",
-        "time-up.html",
-        "time-up.js",
-  "deep-work.html",
-  "deep-work.js",
-        "offscreen.html",
-        "offscreen.js",
-        "sound/*"
-      ],
-      "matches": ["<all_urls>"]
-    }
+    "stats.html",
+    "stats.js",
+    "time-up.html",
+    "time-up.js",
+    "deep-work.html",
+    "deep-work.js",
+    "offscreen.html",
+    "offscreen.js",
+    "sound/*"
   ]
 }
