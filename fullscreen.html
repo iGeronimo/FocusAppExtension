@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mindful Focus — Fullscreen Timer</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    html, body { height: 100%; }
+    body { margin:0; background:#000; color:#fff; }
+    .fs-wrap { display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; padding:40px 24px; gap:28px; }
+    .phase { font-size: clamp(16px, 2.2vw, 22px); color:#bbb; letter-spacing:.3px; }
+  .time { font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace; font-variant-numeric: tabular-nums; font-weight:800; letter-spacing:1px; font-size: clamp(56px, 14vw, 180px); line-height:1; }
+    .bar { width:min(1200px, 90vw); height:8px; background:#0e0e0e; border:1px solid #222; border-radius:999px; overflow:hidden; }
+    .bar .fill { height:100%; width:0%; background:#fff; transition: width .3s ease; }
+    .controls { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+    .controls button { min-width:120px; padding:12px 16px; border-radius:12px; border:1px solid #222; background:#fff; color:#000; font-weight:700; }
+    .controls button.secondary { background:transparent; color:#fff; border-color:#333; }
+    .note { color:#888; font-size:13px; }
+  </style>
+  </head>
+  <body>
+    <div class="fs-wrap">
+      <div class="phase" id="fsPhase">Ready to focus</div>
+      <div class="time" id="fsTime">25:00</div>
+      <div class="bar"><div class="fill" id="fsFill"></div></div>
+      <div class="controls">
+        <button id="fsPlayPause">Start</button>
+        <button id="fsReset" class="secondary">Reset</button>
+        <button id="fsFullscreen" class="secondary">Fullscreen</button>
+      </div>
+      <div class="note">Tip: press F11 for full browser fullscreen. The button toggles page fullscreen.</div>
+    </div>
+    <script src="fullscreen.js"></script>
+  </body>
+  </html>

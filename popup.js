@@ -16,6 +16,7 @@ const closeMenuBtn = document.getElementById('closeMenuBtn');
 const menuLogBtn = document.getElementById('menuLogBtn');
 const menuStatsBtn = document.getElementById('menuStatsBtn');
 const menuBlockedBtn = document.getElementById('menuBlockedBtn');
+const menuFullscreenBtn = document.getElementById('menuFullscreenBtn');
 const menuSettingsBtn = document.getElementById('menuSettingsBtn');
 
 // Deep work and sound settings are managed in settings.html
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const openTab = (path) => { const url = chrome.runtime.getURL(path); chrome.tabs.create({ url }); closeMenu(); };
   menuLogBtn?.addEventListener('click', () => openTab('reflection-log.html'));
   menuStatsBtn?.addEventListener('click', () => openTab('stats.html'));
+  menuFullscreenBtn?.addEventListener('click', () => openTab('fullscreen.html'));
   menuBlockedBtn?.addEventListener('click', () => openTab('manage-blocked.html'));
   menuSettingsBtn?.addEventListener('click', () => openTab('settings.html'));
 });

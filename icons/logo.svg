@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title>Mindful Focus logo</title>
+  <desc>White circular badge with a centered black dot</desc>
+  <circle cx="64" cy="64" r="64" fill="#ffffff"/>
+  <circle cx="64" cy="64" r="45" fill="#000000"/>
+</svg>

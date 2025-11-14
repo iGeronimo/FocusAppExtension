@@ -545,38 +545,72 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       });
       break;
     case 'startFromPrompt': {
-        // User chose the next mode from the time-up window
+      // User chose the next mode from the time-up window
       const mode = request.mode === 'break' ? 'break' : 'focus';
-      const focusMinutes = Number.isFinite(request.focusMinutes) ? Math.max(1, Math.min(180, Math.floor(request.focusMinutes))) : timerState.settings.focusTime;
-      const breakMinutes = Number.isFinite(request.breakMinutes) ? Math.max(1, Math.min(180, Math.floor(request.breakMinutes))) : timerState.settings.breakTime;
+      const focusMinutes = Number.isFinite(request.focusMinutes) ? Math.max(1, Math.min(180, Math.floor(request.focusMinutes))) : (timerState.settings?.focusTime || 25);
+      const breakMinutes = Number.isFinite(request.breakMinutes) ? Math.max(1, Math.min(180, Math.floor(request.breakMinutes))) : (timerState.settings?.breakTime || 5);
       console.log('[BG] startFromPrompt received', { requestMode: request.mode, resolvedMode: mode, focusMinutes, breakMinutes });
       try { chrome.storage.sync.set({ focusTime: focusMinutes, breakTime: breakMinutes }); } catch {}
       // Update in-memory settings
       timerState.settings.focusTime = focusMinutes;
       timerState.settings.breakTime = breakMinutes;
-      // Ensure any existing timer is fully stopped before switching
+      // Stop any existing timer before switching
       pauseTimer();
-      // Apply the chosen mode and duration explicitly
+
+      // If starting a focus session and Deep Work is enabled, open checklist instead of starting immediately
       if (mode === 'focus') {
-        timerState.mode = 'focus';
-        timerState.timeLeft = focusMinutes * 60;
-      } else {
-        timerState.mode = 'break';
-        timerState.timeLeft = breakMinutes * 60;
+        chrome.storage.sync.get({ deepWorkEnabled: false }, async ({ deepWorkEnabled }) => {
+          if (deepWorkEnabled) {
+            try {
+              timerState.mode = 'focus';
+              timerState.timeLeft = focusMinutes * 60;
+              await saveTimerState();
+              updateBadge();
+              // Close the time-up window if we created it
+              if (timeUpWindowId !== null) {
+                try { await chrome.windows.remove(timeUpWindowId); } catch {}
+                timeUpWindowId = null;
+              }
+              await openDeepWorkWindow();
+              try { sendResponse({ ok: true, mode: 'focus', via: 'deep-work' }); } catch {}
+            } catch (e) {
+              console.warn('[BG] startFromPrompt deep-work path error', e);
+              try { sendResponse({ ok: false, error: String(e) }); } catch {}
+            }
+            return;
+          }
+          // Deep Work not enabled: start focus immediately
+          timerState.mode = 'focus';
+          timerState.timeLeft = focusMinutes * 60;
+          saveTimerState()
+            .then(() => {
+              updateBadge();
+              startTimer();
+              try { sendResponse({ ok: true, mode: 'focus', timeLeft: timerState.timeLeft }); } catch {}
+            })
+            .catch((e) => {
+              console.warn('[BG] startFromPrompt focus save error', e);
+              try { sendResponse({ ok: false, error: String(e) }); } catch {}
+            });
+        });
+        return true; // async response
       }
-      // Persist and then start
+
+      // Break path: apply and start immediately
+      timerState.mode = 'break';
+      timerState.timeLeft = breakMinutes * 60;
       saveTimerState()
         .then(() => {
           updateBadge();
           startTimer();
-          try { sendResponse({ ok: true, mode: timerState.mode, timeLeft: timerState.timeLeft }); } catch {}
+          try { sendResponse({ ok: true, mode: 'break', timeLeft: timerState.timeLeft }); } catch {}
         })
         .catch((e) => {
-          console.warn('[BG] startFromPrompt save error', e);
+          console.warn('[BG] startFromPrompt break save error', e);
           try { sendResponse({ ok: false, error: String(e) }); } catch {}
         });
-      return true; // keep port open for async response
-      }
+      return true; // async response
+    }
   }
 });
 

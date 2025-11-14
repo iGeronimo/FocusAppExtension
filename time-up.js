@@ -42,15 +42,24 @@
     await chrome.storage.sync.set({ focusTime: focusMinutes, breakTime: breakMinutes });
   }
 
-  function startMode(mode){
+  async function startMode(mode){
     const focusMinutes = clampInt(focusInput?.value ?? 25, 1, 180);
     const breakMinutes = clampInt(breakInput?.value ?? 5, 1, 180);
     console.log('[TimeUp] startMode click', { mode, focusMinutes, breakMinutes });
-    persistDurations(focusMinutes, breakMinutes).finally(() => {
-      chrome.runtime.sendMessage({ action: 'startFromPrompt', mode, focusMinutes, breakMinutes }, () => {
-        // ignore errors
-        closeSelf();
-      });
+    // Persist chosen durations first
+    await persistDurations(focusMinutes, breakMinutes);
+    // If user chose Focus and Deep Work is enabled, open the checklist immediately
+    if (mode === 'focus') {
+      try {
+        const { deepWorkEnabled = false } = await chrome.storage.sync.get({ deepWorkEnabled: false });
+        if (deepWorkEnabled) {
+          chrome.runtime.sendMessage({ action: 'openDeepWorkWindow' });
+        }
+      } catch {}
+    }
+    // Delegate to background to apply mode + start or show checklist per settings, then close
+    chrome.runtime.sendMessage({ action: 'startFromPrompt', mode, focusMinutes, breakMinutes }, () => {
+      closeSelf();
     });
   }
 

@@ -29,6 +29,22 @@ let sessionsChartInstance = null;
 let distractionsChartInstance = null;
 let currentWindow = 'monthly';
 
+async function ensureChartLoaded() {
+  if (typeof Chart !== 'undefined') return true;
+  try { console.warn('[Stats] Chart not found, attempting dynamic load'); } catch {}
+  const url = chrome.runtime?.getURL ? chrome.runtime.getURL('lib/chart.umd.min.js') : 'lib/chart.umd.min.js';
+  await new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = url;
+    s.onload = () => resolve();
+    s.onerror = (e) => reject(e);
+    document.head.appendChild(s);
+  }).catch((e) => {
+    try { console.error('[Stats] Failed to load Chart.js from', url, e); } catch {}
+  });
+  return typeof Chart !== 'undefined';
+}
+
 // Visible boot log and error capture to aid debugging in the Stats page
 try { console.log('[Stats] script loaded'); } catch {}
 try {
@@ -198,6 +214,17 @@ function fmtMinutes(totalSeconds) {
 }
 
 async function render() {
+  const chartOk = await ensureChartLoaded();
+  if (!chartOk) {
+    try {
+      const container = document.querySelector('.container') || document.body;
+      const warn = document.createElement('div');
+      warn.style.cssText = 'margin:16px 0; color:#fff; background:#b00020; padding:10px 12px; border-radius:8px;';
+      warn.textContent = 'Charts unavailable: Chart.js library was not found in this build. Please include lib/chart.umd.min.js in the package.';
+      container.insertBefore(warn, container.firstChild);
+    } catch {}
+    return;
+  }
   try { console.log('[Stats] render() start'); } catch {}
   const { focusHistory, analytics } = await loadData();
   const now = new Date();

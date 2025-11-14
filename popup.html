@@ -7,7 +7,7 @@
     body { width:300px; padding:20px; padding-bottom:28px; }
     .container { text-align:center; border-width:2px; padding:14px; border-radius:12px; margin:6px; }
     h1 { margin:0 0 20px 0; font-size:20px; font-weight:600; }
-    .timer-display { font-size:44px; font-weight:700; margin:18px 0; font-family: 'Courier New', monospace; }
+  .timer-display { font-size:44px; font-weight:800; margin:18px 0; font-family: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace; font-variant-numeric: tabular-nums; letter-spacing: 1px; }
     .status { font-size:14px; margin:8px 0; opacity:0.9; }
   .controls { margin: 20px 0; }
     button { width: 90px; }
@@ -41,7 +41,7 @@
   <div class="container">
     <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
       <div class="brand" style="margin:0;">
-        <span class="logo" aria-hidden="true">●</span>
+        <img class="brand-logo" src="icons/logo.svg" alt="Mindful Focus" width="20" height="20" />
         <span class="brand-text">Mindful Focus</span>
       </div>
       <div style="display:flex; gap:8px;">
@@ -95,6 +95,7 @@
       </div>
       <button id="menuLogBtn" class="menu-item">📖 Reflection Log</button>
       <button id="menuStatsBtn" class="menu-item">📊 Stats</button>
+  <button id="menuFullscreenBtn" class="menu-item">🖥️ Fullscreen Timer</button>
       <button id="menuBlockedBtn" class="menu-item">🚫 Manage Blocked Sites</button>
       <button id="menuSettingsBtn" class="menu-item">⚙️ Settings</button>
     </div>
