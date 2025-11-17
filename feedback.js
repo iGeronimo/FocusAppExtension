@@ -1,7 +1,7 @@
 (function(){
   const form = document.getElementById('feedbackForm');
   const copyBtn = document.getElementById('copyBtn');
-  const toEmail = ''; // Optional: set a destination, e.g., 'you@example.com'
+  const toEmail = 'mathijslehman.ml@gmail.com';
 
   function encode(str){ return encodeURIComponent(str || ''); }
 
