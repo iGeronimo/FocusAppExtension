@@ -17,6 +17,8 @@ const menuLogBtn = document.getElementById('menuLogBtn');
 const menuStatsBtn = document.getElementById('menuStatsBtn');
 const menuBlockedBtn = document.getElementById('menuBlockedBtn');
 const menuFullscreenBtn = document.getElementById('menuFullscreenBtn');
+const menuFeedbackBtn = document.getElementById('menuFeedbackBtn');
+const menuCoffeeBtn = document.getElementById('menuCoffeeBtn');
 const menuSettingsBtn = document.getElementById('menuSettingsBtn');
 
 // Deep work and sound settings are managed in settings.html
@@ -37,11 +39,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.target === menuOverlay) closeMenu();
   });
   const openTab = (path) => { const url = chrome.runtime.getURL(path); chrome.tabs.create({ url }); closeMenu(); };
+  const openExternal = (url) => { chrome.tabs.create({ url }); closeMenu(); };
   menuLogBtn?.addEventListener('click', () => openTab('reflection-log.html'));
   menuStatsBtn?.addEventListener('click', () => openTab('stats.html'));
   menuFullscreenBtn?.addEventListener('click', () => openTab('fullscreen.html'));
   menuBlockedBtn?.addEventListener('click', () => openTab('manage-blocked.html'));
   menuSettingsBtn?.addEventListener('click', () => openTab('settings.html'));
+  menuFeedbackBtn?.addEventListener('click', () => openTab('feedback.html'));
+  menuCoffeeBtn?.addEventListener('click', () => openExternal('https://www.buymeacoffee.com/mathijslehman'));
 });
 
 // Get current site information

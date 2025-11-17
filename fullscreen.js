@@ -70,6 +70,16 @@ fsFullscreen.addEventListener('click', async () => {
   } catch {}
 });
 
+// Toggle immersive UI when entering/leaving fullscreen so only timer + bar remain
+function updateImmersive(){
+  const on = !!document.fullscreenElement;
+  try { document.body.classList.toggle('immersive', on); } catch {}
+}
+
+document.addEventListener('fullscreenchange', updateImmersive);
+// Initialize state in case the page loads while already in fullscreen
+updateImmersive();
+
 // periodic refresh
 render();
 setInterval(render, 1000);

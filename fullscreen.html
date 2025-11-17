@@ -17,6 +17,14 @@
     .controls button { min-width:120px; padding:12px 16px; border-radius:12px; border:1px solid #222; background:#fff; color:#000; font-weight:700; }
     .controls button.secondary { background:transparent; color:#fff; border-color:#333; }
     .note { color:#888; font-size:13px; }
+
+    /* Immersive fullscreen: fade out non-essential UI */
+    .phase, .controls, .note { transition: opacity .25s ease, visibility .25s ease; }
+    body.immersive .phase,
+    body.immersive .controls,
+    body.immersive .note { opacity:0; visibility:hidden; pointer-events:none; }
+    /* Keep vertical centering tidy when items are hidden */
+    body.immersive .fs-wrap { gap:20px; }
   </style>
   </head>
   <body>

@@ -71,7 +71,7 @@ button:hover, .btn:hover, .nav-button:hover{
 }
 button:disabled { opacity:.6; cursor:not-allowed; }
 
-input[type="text"], input[type="number"], select, textarea{
+input[type="text"], input[type="number"], input[type="email"], select, textarea{
   background:var(--input-bg);
   color:var(--input-fg);
   border:1px solid var(--input-border);

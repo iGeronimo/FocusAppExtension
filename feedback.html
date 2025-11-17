@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Send Feedback</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body{ display:flex; justify-content:center; }
+    .container{ max-width:680px; width:95%; padding:20px; margin-top:20px; }
+    h1{ margin:0 0 10px; font-size:22px; font-weight:600; text-align:center; }
+    .subtitle{ text-align:center; margin-bottom:14px; }
+    form{ display:grid; gap:10px; }
+    .row{ display:grid; gap:8px; }
+    label{ font-size:13px; }
+    input, textarea{ width:100%; padding:10px; }
+    textarea{ min-height:140px; resize:vertical; }
+    .actions{ display:flex; gap:10px; justify-content:center; margin-top:8px; }
+    .note{ color:var(--muted); font-size:12px; margin-top:10px; text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="container card">
+    <h1>Send Feedback</h1>
+    <div class="subtitle">We'd love to hear from you. No account needed.</div>
+
+    <form id="feedbackForm">
+      <div class="row">
+        <label for="name">Name (optional)</label>
+        <input id="name" type="text" placeholder="Your name" />
+      </div>
+      <div class="row">
+        <label for="email">Email (optional)</label>
+        <input id="email" type="email" placeholder="you@example.com" />
+      </div>
+      <div class="row">
+        <label for="message">Message</label>
+        <textarea id="message" required placeholder="What's working well? What could be better?"></textarea>
+      </div>
+      <div class="actions">
+        <button type="submit" id="sendBtn">Send via email</button>
+        <button type="button" id="copyBtn" class="btn">Copy message</button>
+      </div>
+    </form>
+
+    <div class="note">Your message opens in your default email client for you to send.</div>
+  </div>
+
+  <script src="feedback.js"></script>
+</body>
+</html>
