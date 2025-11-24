@@ -26,24 +26,32 @@
 
     <form id="feedbackForm">
       <div class="row">
-        <label for="name">Name (optional)</label>
-        <input id="name" type="text" placeholder="Your name" />
+        <label for="name">Name</label>
+        <input id="name" type="text" required placeholder="Your name" />
       </div>
       <div class="row">
-        <label for="email">Email (optional)</label>
-        <input id="email" type="email" placeholder="you@example.com" />
+        <label for="email">Email</label>
+        <input id="email" type="email" required placeholder="you@example.com" />
+      </div>
+      <div class="row">
+        <label for="topic">Topic</label>
+        <select id="topic" required>
+          <option value="Suggestion">Suggestion</option>
+          <option value="Bug">Bug</option>
+          <option value="Other">Other</option>
+        </select>
       </div>
       <div class="row">
         <label for="message">Message</label>
         <textarea id="message" required placeholder="What's working well? What could be better?"></textarea>
       </div>
       <div class="actions">
-        <button type="submit" id="sendBtn">Send via email</button>
-        <button type="button" id="copyBtn" class="btn">Copy message</button>
+        <button type="submit" id="sendBtn">Send Feedback</button>
       </div>
     </form>
 
-    <div class="note">Your message opens in your default email client for you to send.</div>
+    <div id="status" class="note" aria-live="polite"></div>
+    <div class="note">Sent to our server endpoint via secure POST.</div>
   </div>
 
   <script src="feedback.js"></script>

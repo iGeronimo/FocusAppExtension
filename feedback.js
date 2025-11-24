@@ -1,44 +1,59 @@
 (function(){
   const form = document.getElementById('feedbackForm');
-  const copyBtn = document.getElementById('copyBtn');
-  const toEmail = 'mathijslehman.ml@gmail.com';
+  const statusEl = document.getElementById('status');
+  const sendBtn = document.getElementById('sendBtn');
+  const ENDPOINT = 'https://mathijslehman.site/send_email.php';
 
-  function encode(str){ return encodeURIComponent(str || ''); }
-
-  function buildBody(){
-    const name = document.getElementById('name')?.value?.trim() || '';
-    const email = document.getElementById('email')?.value?.trim() || '';
-    const msg = document.getElementById('message')?.value?.trim() || '';
-    const lines = [];
-    if (name) lines.push('Name: ' + name);
-    if (email) lines.push('Email: ' + email);
-    if (msg) { if (lines.length) lines.push(''); lines.push(msg); }
-    return lines.join('\n');
+  function setStatus(msg, ok=true){
+    if (!statusEl) return;
+    statusEl.textContent = msg;
+    statusEl.style.color = ok ? '#b3b3b3' : '#ff625c';
   }
 
-  form.addEventListener('submit', (e) => {
+  function getValues(){
+    return {
+      name: document.getElementById('name')?.value?.trim() || '',
+      email: document.getElementById('email')?.value?.trim() || '',
+      topic: document.getElementById('topic')?.value || 'General',
+      message: document.getElementById('message')?.value?.trim() || ''
+    };
+  }
+
+  async function onSubmit(e){
     e.preventDefault();
-    const body = buildBody();
-    const subject = 'Mindful Focus Feedback';
-    const href = `mailto:${toEmail}?subject=${encode(subject)}&body=${encode(body)}`;
-    try { window.location.href = href; } catch {}
-  });
-
-  copyBtn.addEventListener('click', async () => {
+    const { name, email, topic, message } = getValues();
+    if (!name){ setStatus('Name required', false); return; }
+    if (!email){ setStatus('Email required', false); return; }
+    if (!message){ setStatus('Message required', false); return; }
+    sendBtn.disabled = true;
+    setStatus('Sending…');
     try {
-      const body = buildBody();
-      await navigator.clipboard.writeText(body);
-      showToast('Copied to clipboard');
-    } catch {
-      showToast('Copy failed');
+      // Include subject derived from topic so backend can optionally use it directly.
+      const body = new URLSearchParams({ name, email, topic, message, subject: topic });
+      const res = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      });
+      if (!res.ok){
+        setStatus('Server error: ' + res.status, false);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        if (data.status === 'success'){
+          setStatus('Feedback sent. Thank you!');
+          form.reset();
+        } else if (data.status === 'error') {
+          setStatus(data.message || 'Failed to send.', false);
+        } else {
+          setStatus('Unexpected response.', false);
+        }
+      }
+    } catch (err){
+      setStatus('Network error: ' + (err.message || 'Unknown'), false);
+    } finally {
+      sendBtn.disabled = false;
     }
-  });
-
-  function showToast(text){
-    const el = document.createElement('div');
-    el.textContent = text;
-    el.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#111;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:8px;z-index:9999;';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 1600);
   }
+
+  form.addEventListener('submit', onSubmit);
 })();
